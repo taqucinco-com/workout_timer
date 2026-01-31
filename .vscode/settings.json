@@ -1,0 +1,54 @@
+{
+  "dart.flutterSdkPath": ".fvm/versions/3.38.9",
+  "search.exclude": {
+    "**/.fvm": true
+  },
+  "files.watcherExclude": {
+    "**/.fvm": true
+  },
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit"
+  },
+  "dart.lineLength": 120,
+  "build-runner.flutterPath": ".fvm/flutter_sdk/bin/flutter",
+  "dart.previewFlutterUiGuides": true,
+  "dart.previewFlutterUiGuidesCustomTracking": false,
+  "dart.closingLabels": true,
+  "[dart]": {
+    "editor.codeActionsOnSave": {
+      "quickfix.insertSemicolon": "explicit"
+    }
+  },
+  "cSpell.words": [
+    "atmark",
+    "Bezier",
+    "cldr",
+    "Collapsable",
+    "commbased",
+    "commentable",
+    "datetime",
+    "LTRB",
+    "LTWH",
+    "Lucide",
+    "noto",
+    "Popable",
+    "pubsub",
+    "roboto",
+    "shadcn",
+    "todos",
+    "udid",
+    "unawaited",
+    "usecase",
+    "webp",
+    "wordprocessingml",
+    "xlarge",
+    "xsmall",
+    "xxlarge",
+    "xxsmall"
+  ],
+  "liveshare.languages.allowGuestCommandControl": true,
+  "liveshare.languages.allowGuestDebugging": true,
+  "editor.formatOnSaveMode": "modificationsIfAvailable",
+  "files.autoSave": "afterDelay"
+}
