@@ -1,3 +1,39 @@
 
+.env*
+
 # FVM Version Cache
 .fvm/
+
+# Flutter
+.dart_tool/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+**/ios/Flutter/.last_build_is
+.pub-cache/
+.pub
+/build/
+**/generated/
+devtools_options.yaml
+
+# IntelliJ
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Miscellaneous
+*.log
+*.swp
+.build/
+.buildlog/
+.history
+.DS_Store
+
+# firebase
+firebase.json
+lib/firebase_options.dart
+ios/Runner/GoogleService-Info.plist
+
+# Git
+.worktrees/
