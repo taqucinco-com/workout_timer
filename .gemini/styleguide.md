@@ -20,13 +20,6 @@ flutter, dartのバージョンはfvmで管理しています。flutter, dartコ
 
 ソースコードを変更する前に予め`fvm flutter pub run build_runner watch --delete-conflicting-outputs`を実行して裏で走らせておいてください。変更を監視して自動生成します。
 
-### JSON Serialization
-
-build.yamlに`field_rename: snake`の設定があるため、camelCaseのフィールド名は自動的にsnake_caseに変換されます。
-そのため、通常のケースでは`@JsonKey(name: 'field_name')`アノテーションは不要です。
-
-例：`channelId` → `channel_id`、`userId` → `user_id`、`replyToMessageId` → `reply_to_message_id`
-
 ## ライブラリ・フレームワーク
 
 ### 状態管理 (hooks_riverpod)
