@@ -1,0 +1,38 @@
+{
+    "general": {
+        "preferredEditor": "code",
+        "sessionRetention": {
+            "enabled": true,
+            "maxAge": "30d",
+            "maxCount": 100
+        }
+    },
+    "ui": {},
+    "tools": {
+        "sandbox": "docker",
+        "discoveryCommand": "bin/get_tools",
+        "callCommand": "bin/call_tool",
+        "exclude": [
+            "write_file"
+        ]
+    },
+    "mcpServers": {},
+    "privacy": {
+        "usageStatisticsEnabled": true
+    },
+    "context": {
+        "fileName": [
+            "spec.md",
+            "plan.md"
+        ],
+        "includeDirectories": [
+            "docs/specify",
+            "docs/plans"
+        ],
+        "loadFromIncludeDirectories": true,
+        "fileFiltering": {
+            "respectGitIgnore": false
+        }
+    },
+    "advanced": {}
+}
