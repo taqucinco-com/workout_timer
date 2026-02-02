@@ -215,7 +215,6 @@ class HomeSideMenu extends HookConsumerWidget {
                     ),
                   ],
                 ),
-                _ => SizedBox.shrink(),
               },
             ),
             const SizedBox(height: 16),

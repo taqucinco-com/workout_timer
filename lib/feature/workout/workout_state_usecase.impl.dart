@@ -69,4 +69,9 @@ class WorkoutSateUseCaseImpl implements WorkoutSateUseCase {
   Future<void> pauseTraining() async {
     _workoutStateController.state = .paused;
   }
+  
+  @override
+  Future<void> resumeTraining() async {
+    _workoutStateController.state = .trainingCountdown;
+  }
 }

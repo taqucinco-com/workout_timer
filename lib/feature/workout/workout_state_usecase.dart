@@ -8,4 +8,5 @@ abstract class WorkoutSateUseCase {
   Future<void> startTraining();
   Future<void> stopTraining();
   Future<void> pauseTraining();
+  Future<void> resumeTraining();
 }

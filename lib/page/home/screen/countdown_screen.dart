@@ -32,23 +32,31 @@ class CountdownScreen extends HookConsumerWidget {
       stateUseCase.stopTraining();
     }
 
+    void secondTimer(Timer timer) {
+      final result = trainingUseCase.update(trainingMenu);
+      if (result == null) {
+        timer.cancel();
+        onComplete();
+      }
+    }
+
     ref.listen(lifeCycleObserverProvider, (p, n) async {
       switch (n) {
         case AsyncData(:final value) when value == .paused:
           countdownTimer.value?.cancel();
+        case AsyncData(:final value) when value == .resumed:
+          final result = trainingUseCase.update(trainingMenu);
+          if (result == null) {
+            onComplete();
+          } else {
+            countdownTimer.value = Timer.periodic(Duration(microseconds: 100), secondTimer);
+          }
         case _:
       }
     });
 
     useEffect(() {
-      countdownTimer.value = Timer.periodic(const Duration(seconds: 1), (timer) {
-        final result = trainingUseCase.updatePerSecond(trainingMenu);
-        if (result == null) {
-          timer.cancel();
-          onComplete();
-        }
-      });
-
+      countdownTimer.value = Timer.periodic(Duration(microseconds: 100), secondTimer);
       return () => countdownTimer.value?.cancel();
     }, []);
 

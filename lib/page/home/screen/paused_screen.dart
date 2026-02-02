@@ -31,7 +31,9 @@ class PausedScreen extends HookConsumerWidget {
       }
     }
 
-    void resume() {}
+    void resume() {
+      stateUseCase.resumeTraining();
+    }
 
     void stopTraining() {
       stateUseCase.stopTraining();
