@@ -8,6 +8,7 @@ import 'package:workout_timer/component/duration_led.dart';
 import 'package:workout_timer/feature/training/training.provider.dart';
 import 'package:workout_timer/feature/training/training_usecase.provider.dart';
 import 'package:workout_timer/feature/workout/workout_state_usecase.provider.dart';
+import 'package:workout_timer/framework/audio/audio_player_map.provider.dart';
 import 'package:workout_timer/framework/build_context_ext.dart';
 import 'package:workout_timer/framework/life_cycle/life_cycle_observer.provider.dart';
 import 'package:workout_timer/page/home/component/home_side_menu.dart';
@@ -23,6 +24,8 @@ class CountdownScreen extends HookConsumerWidget {
     final remainDuration = ref.watch(trainingProgressProvider.select((s) => s?.remainDuration));
     final isInterval = ref.watch(trainingProgressProvider.select((s) => s?.isInterval));
     final doneRound = ref.watch(trainingProgressProvider.select((s) => s?.doneRounds));
+    final alarmPlayer = ref.watch(audioPlayerMap.select((s) => s.getPlayers(.alarm)));
+    final gongPlayer = ref.watch(audioPlayerMap.select((s) => s.getPlayers(.gong)));
 
     final countdownTimer = useState<Timer?>(null);
     final timerAreaKey = useMemoized(() => GlobalKey(), []);
@@ -33,10 +36,13 @@ class CountdownScreen extends HookConsumerWidget {
     }
 
     void secondTimer(Timer timer) {
-      final result = trainingUseCase.update(trainingMenu);
-      if (result == null) {
+      final current = trainingUseCase.update(trainingMenu);
+      if (current == null) {
         timer.cancel();
+        gongPlayer?.resume();
         onComplete();
+      } else if (current.remainDuration.inMilliseconds < 100 && (current.doneRounds + 1) < trainingMenu.rounds) {
+        alarmPlayer?.resume();
       }
     }
 
@@ -69,6 +75,7 @@ class CountdownScreen extends HookConsumerWidget {
     }
 
     void pause() {
+      alarmPlayer?.resume();
       countdownTimer.value?.cancel();
       trainingUseCase.update(trainingMenu);
       stateUseCase.pauseTraining();
