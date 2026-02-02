@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:workout_timer/feature/training/training_menu.dart';
 
 @immutable
 sealed class WorkoutCommand {
@@ -9,16 +10,20 @@ sealed class WorkoutCommand {
 class TrainingDurationSet extends WorkoutCommand {
   final Duration duration;
   TrainingDurationSet(this.duration)
-      : assert(
-            duration.inSeconds >= 0 && duration.inMinutes <= 99, 'Training duration must be between 0 and 99 minutes.');
+    : assert(
+        duration.inSeconds >= 0 && duration.inMinutes <= 99,
+        'Training duration must be between 0 and 99 minutes.',
+      );
 }
 
 /// Command to set the interval duration.
 class IntervalDurationSet extends WorkoutCommand {
   final Duration duration;
   IntervalDurationSet(this.duration)
-      : assert(
-            duration.inSeconds >= 0 && duration.inMinutes <= 99, 'Interval duration must be between 0 and 99 minutes.');
+    : assert(
+        duration.inSeconds >= 0 && duration.inMinutes <= 99,
+        'Interval duration must be between 0 and 99 minutes.',
+      );
 }
 
 /// Command to set the number of rounds/sets.
@@ -28,16 +33,10 @@ class RoundSet extends WorkoutCommand {
 }
 
 /// Command to set all training parameters at once.
-class TrainingSet extends WorkoutCommand {
-  final Duration trainingDuration;
-  final Duration intervalDuration;
-  final int roundCount;
+class TrainingMenuSet extends WorkoutCommand {
+  final TrainingMenu trainingMenu;
 
-  const TrainingSet({
-    required this.trainingDuration,
-    required this.intervalDuration,
-    required this.roundCount,
-  });
+  const TrainingMenuSet({required this.trainingMenu});
 }
 
 /// Command to start the training countdown.

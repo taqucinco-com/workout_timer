@@ -5,15 +5,15 @@ import 'package:flutter_svg/flutter_svg.dart';
 class SevenSegmentNumber extends StatelessWidget {
   final String digit;
   final Color color;
-  final double? width; // Added width parameter
-  final double? height; // Added height parameter
+  final Size? segmentSize;
+  final Size? colonSize;
 
   const SevenSegmentNumber({
     super.key,
     required this.digit,
     this.color = Colors.red, // Default color for LED
-    this.width, // Added to constructor
-    this.height, // Added to constructor
+    this.segmentSize,
+    this.colonSize,
   });
 
   @override
@@ -22,8 +22,9 @@ class SevenSegmentNumber extends StatelessWidget {
     return SvgPicture.asset(
       assetName,
       colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
-      width: width ?? 24, // Use provided width or default
-      height: height ?? 42, // Use provided height or default
+      fit: BoxFit.fill,
+      width: segmentSize?.width ?? 24.0,
+      height: segmentSize?.height ?? 24.0,
     );
   }
 }
@@ -44,12 +45,20 @@ Widget previewSevenSegmentNumber1() {
 
 @Preview(name: 'seven_segment_number2')
 Widget previewSevenSegmentNumber2() {
-  return const SevenSegmentNumber(digit: '2', color: Colors.green);
+  return const SevenSegmentNumber(
+    digit: '2',
+    color: Colors.green,
+    segmentSize: Size(48, 96),
+  );
 }
 
 @Preview(name: 'seven_segment_number3')
 Widget previewSevenSegmentNumber3() {
-  return const SevenSegmentNumber(digit: '3', color: Colors.yellow);
+  return const SevenSegmentNumber(
+    digit: '3',
+    color: Colors.yellow,
+    segmentSize: Size(96, 48),
+  );
 }
 
 @Preview(name: 'seven_segment_number4')
@@ -79,7 +88,14 @@ Widget previewSevenSegmentNumber8() {
 
 @Preview(name: 'seven_segment_number9')
 Widget previewSevenSegmentNumber9() {
-  return const SevenSegmentNumber(digit: '9', color: Colors.lime);
+  return SizedBox(
+    width: 10,
+    height: 100,
+    child: const SevenSegmentNumber(
+      digit: '9',
+      color: Colors.lime,
+    ),
+  );
 }
 
 @Preview(name: 'seven_segment_number_colon')

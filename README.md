@@ -23,3 +23,7 @@ $ fvm use stable
 $ fvm flutter create . --project-name fvm_vscode_template
 ```
 
+## preview
+
+https://docs.flutter.dev/tools/widget-previewer
+flutter widget-preview start

@@ -3,22 +3,19 @@ enum WorkoutState {
   timeSettingNotSet,
 
   /// User is currently setting the training duration.
-  trainingTimeSetting,
+  trainingDurationSetting,
 
   /// User is currently setting the interval duration.
-  intervalTimeSetting,
+  intervalDurationSetting,
 
   /// User is currently setting the number of sets.
-  setCountSetting,
+  roundSetting,
 
   /// Training parameters are set, and the app is waiting for the user to start.
   waitingForTraining,
 
   /// The training countdown is active.
   trainingCountdown,
-
-  /// The interval countdown is active.
-  intervalCountdown,
 
   /// The current countdown (training or interval) is paused.
   paused,
