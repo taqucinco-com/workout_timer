@@ -39,10 +39,10 @@ class CountdownScreen extends HookConsumerWidget {
       final current = trainingUseCase.update(trainingMenu);
       if (current == null) {
         timer.cancel();
-        gongPlayer?.resume();
+        unawaited(gongPlayer?.play());
         onComplete();
       } else if (current.remainDuration.inMilliseconds < 100 && (current.doneRounds + 1) < trainingMenu.rounds) {
-        alarmPlayer?.resume();
+        unawaited(alarmPlayer?.play());
       }
     }
 
@@ -75,7 +75,6 @@ class CountdownScreen extends HookConsumerWidget {
     }
 
     void pause() {
-      alarmPlayer?.resume();
       countdownTimer.value?.cancel();
       trainingUseCase.update(trainingMenu);
       stateUseCase.pauseTraining();
