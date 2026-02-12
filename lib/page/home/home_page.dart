@@ -24,6 +24,20 @@ class HomePage extends HookConsumerWidget {
     final recognizer = ref.watch(speechRecognizerProvider);
 
     final recording = useStream(recognizer.onRecording());
+    final animationController = useAnimationController(duration: const Duration(milliseconds: 1000));
+
+    useEffect(() {
+      if (recording.data ?? false) {
+        animationController.repeat(reverse: true);
+      } else {
+        animationController.stop();
+      }
+      return null;
+    }, [recording.data]);
+
+    final animatedColor = useAnimation(
+      ColorTween(begin: Colors.blue.shade400, end: Colors.blue.shade100).animate(animationController),
+    );
 
     // Future<void> runChannel() async {
     //   try {
@@ -81,7 +95,7 @@ class HomePage extends HookConsumerWidget {
         },
         floatingActionButton: IconButton(
           onPressed: tapMicIcon,
-          icon: Icon(Icons.mic, color: recording.data ?? false ? Colors.blue.shade400 : Colors.grey, size: 60),
+          icon: Icon(Icons.mic, color: recording.data ?? false ? animatedColor : Colors.grey, size: 60),
         ),
       ),
     );
