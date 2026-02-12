@@ -6,7 +6,7 @@ import 'package:workout_timer/feature/workout/workout_command.dart';
 import 'package:workout_timer/feature/workout/workout_state.dart';
 import 'package:workout_timer/feature/workout/workout_state_usecase.dart';
 
-class WorkoutSateUseCaseImpl implements WorkoutSateUseCase {
+class WorkoutSateUseCaseImpl implements WorkoutStateUseCase {
   final StateController<WorkoutState> _workoutStateController;
   final StateController<TrainingMenu> _pendingTrainingController;
   final StateController<TrainingMenu> _trainingController;
