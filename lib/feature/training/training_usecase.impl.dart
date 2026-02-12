@@ -34,54 +34,6 @@ class TrainingUseCaseImpl implements TrainingUseCase {
 
     return Duration(minutes: newMinutes, seconds: newSeconds);
   }
-
-  @override
-  TrainingMenuProgress? updatePerSecond(TrainingMenu trainingMenu) {
-    final current = _progressController.state;
-    if (current == null) return null;
-    final newRemainDuration = current.remainDuration - const Duration(seconds: 1);
-
-    TrainingMenuProgress? next() {
-      if (newRemainDuration.inSeconds < 0) {
-        if (current.isInterval) {
-          // Interval finished, start next training round
-          return TrainingMenuProgress.from(
-            remainDuration: trainingMenu.trainingDuration,
-            isInterval: false,
-            doneRounds: current.doneRounds + 1,
-          );
-        } else {
-          if (current.doneRounds + 1 >= trainingMenu.rounds) {
-            // All rounds done
-            return null;
-          }
-          if (trainingMenu.intervalDuration.compareTo(Duration.zero) == 0) {
-            return TrainingMenuProgress.from(
-              remainDuration: trainingMenu.trainingDuration,
-              isInterval: false,
-              doneRounds: current.doneRounds + 1,
-            );
-          } else {
-            return TrainingMenuProgress.from(
-              remainDuration: trainingMenu.intervalDuration,
-              isInterval: true,
-              doneRounds: current.doneRounds,
-            );
-          }
-        }
-      } else {
-        return TrainingMenuProgress.from(
-          remainDuration: newRemainDuration,
-          isInterval: current.isInterval,
-          doneRounds: current.doneRounds,
-        );
-      }
-    }
-
-    final nextProgress = next();
-    _progressController.state = nextProgress;
-    return nextProgress;
-  }
   
   @override
   TrainingMenuProgress? update(TrainingMenu trainingMenu) {

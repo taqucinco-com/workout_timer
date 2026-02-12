@@ -69,7 +69,6 @@ class WaitingForTrainingScreen extends HookConsumerWidget {
                   flex: 3,
                   child: SizedBox.expand(
                     child: Column(
-                      // Use Column to stack duration and rounds
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Row(

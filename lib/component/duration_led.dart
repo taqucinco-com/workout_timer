@@ -26,13 +26,9 @@ class DurationLed extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final minutes = duration.inMinutes;
     final seconds = duration.inSeconds % 60;
-    final milliSeconds = duration.inMilliseconds % 1000;
 
-    final roundedSecond = (seconds + (milliSeconds > 0 ? 1 : 0));
-    final roundedMinute = minutes + (roundedSecond > 59 ? 1 : 0);
-
-    final minuteString = roundedMinute.toString().padLeft(2, '0');
-    final secondString = ((roundedSecond > 59) ? 0 : roundedSecond).toString().padLeft(2, '0');
+    final minuteString = minutes.toString().padLeft(2, '0');
+    final secondString = seconds.toString().padLeft(2, '0');
 
     final animationController = useAnimationController(duration: const Duration(milliseconds: 750));
 
