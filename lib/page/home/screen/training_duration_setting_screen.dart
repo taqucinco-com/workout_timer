@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:workout_timer/component/duration_led.dart';
-import 'package:workout_timer/feature/workout/workout_command.dart';
 import 'package:workout_timer/feature/training/training.provider.dart';
 import 'package:workout_timer/feature/training/training_usecase.provider.dart';
+import 'package:workout_timer/feature/workout/workout_command.dart';
 import 'package:workout_timer/feature/workout/workout_state_usecase.provider.dart';
 import 'package:workout_timer/framework/build_context_ext.dart';
 import 'package:workout_timer/page/home/component/duration_buttons.dart';
@@ -55,7 +55,7 @@ class TrainingDurationSettingScreen extends HookConsumerWidget {
               flex: 1,
               child: SizedBox.expand(
                 child: HomeSideMenu(
-                  durationOption: .running,
+                  durationOptions: {.running},
                   onTapSet: pendingDuration.value == Duration.zero ? null : toNext,
                   onTapReset: clearTimer,
                 ),

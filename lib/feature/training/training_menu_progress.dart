@@ -25,4 +25,16 @@ class TrainingMenuProgress {
     doneRounds: doneRounds,
     lastUpdateDateTime: lastUpdateDateTime ?? DateTime.now(),
   );
+
+  TrainingMenuProgress copyWith({
+    Duration? remainDuration,
+    bool? isInterval,
+    int? doneRounds,
+    DateTime? lastUpdateDateTime,
+  }) => TrainingMenuProgress(
+    remainDuration: remainDuration ?? this.remainDuration,
+    isInterval: isInterval ?? this.isInterval,
+    doneRounds: doneRounds ?? this.doneRounds,
+    lastUpdateDateTime: lastUpdateDateTime ?? this.lastUpdateDateTime,
+  );
 }

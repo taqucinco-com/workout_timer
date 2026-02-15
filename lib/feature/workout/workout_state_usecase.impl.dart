@@ -64,14 +64,61 @@ class WorkoutSateUseCaseImpl implements WorkoutStateUseCase {
     _progressController.state = null;
     _workoutStateController.state = .waitingForTraining;
   }
-  
+
   @override
   Future<void> pauseTraining() async {
     _workoutStateController.state = .paused;
   }
-  
+
   @override
   Future<void> resumeTraining() async {
     _workoutStateController.state = .trainingCountdown;
+    _progressController.state = _progressController.state?.copyWith(
+      lastUpdateDateTime: DateTime.now(),
+    );
+  }
+
+  @override
+  Future<WorkoutState?> execute(List<WorkoutCommand> commands) async {
+    final state = _workoutStateController.state;
+    switch ((commands, state)) {
+      case ([TrainingStart()], .waitingForTraining):
+        startTraining();
+        return _workoutStateController.state;
+      case ([TrainingStart()], .paused):
+        resumeTraining();
+        return _workoutStateController.state;
+      case (_, .trainingCountdown) when commands.contains(TrainingPause()):
+        pauseTraining();
+        return _workoutStateController.state;
+      case (_, .trainingCountdown) when commands.contains(TrainingStop()):
+        stopTraining();
+        return _workoutStateController.state;
+      case (
+            final cmds,
+            .timeSettingNotSet ||
+                .waitingForTraining ||
+                .trainingDurationSetting ||
+                .intervalDurationSetting ||
+                .roundSetting,
+          )
+          when cmds.isNotEmpty &&
+              cmds.every((c) => c is TrainingDurationSet || c is IntervalDurationSet || c is RoundSet):
+        {
+          final menu = cmds.fold(
+            _trainingController.state,
+            (prev, command) => switch (command) {
+              TrainingDurationSet(duration: final d) => prev.copyWith(trainingDuration: d),
+              IntervalDurationSet(duration: final d) => prev.copyWith(intervalDuration: d),
+              RoundSet(count: final c) => prev.copyWith(rounds: c),
+              _ => prev,
+            },
+          );
+          await setTrainingMenu(TrainingMenuSet(trainingMenu: menu));
+          return _workoutStateController.state;
+        }
+      default:
+        return null;
+    }
   }
 }

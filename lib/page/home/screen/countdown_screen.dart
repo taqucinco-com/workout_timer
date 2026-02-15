@@ -7,6 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:workout_timer/component/duration_led.dart';
 import 'package:workout_timer/feature/training/training.provider.dart';
 import 'package:workout_timer/feature/training/training_usecase.provider.dart';
+import 'package:workout_timer/feature/workout/workout_state.provider.dart';
 import 'package:workout_timer/feature/workout/workout_state_usecase.provider.dart';
 import 'package:workout_timer/framework/audio/audio_player_map.provider.dart';
 import 'package:workout_timer/framework/build_context_ext.dart';
@@ -25,7 +26,8 @@ class CountdownScreen extends HookConsumerWidget {
     final isInterval = ref.watch(trainingProgressProvider.select((s) => s?.isInterval));
     final doneRound = ref.watch(trainingProgressProvider.select((s) => s?.doneRounds));
     final alarmPlayer = ref.watch(audioPlayerMap.select((s) => s.getPlayers(.alarm)));
-    final gongPlayer = ref.watch(audioPlayerMap.select((s) => s.getPlayers(.gong)));
+    final clickPlayer = ref.watch(audioPlayerMap.select((s) => s.getPlayers(.click)));
+    // final gongPlayer = ref.watch(audioPlayerMap.select((s) => s.getPlayers(.gong)));
 
     final countdownTimer = useState<Timer?>(null);
     final timerAreaKey = useMemoized(() => GlobalKey(), []);
@@ -39,10 +41,17 @@ class CountdownScreen extends HookConsumerWidget {
       final current = trainingUseCase.update(trainingMenu);
       if (current == null) {
         timer.cancel();
-        unawaited(gongPlayer?.play());
+        if (ref.read(workoutStateProvider) == .trainingCountdown) {
+          // unawaited(gongPlayer?.play());
+          unawaited(alarmPlayer?.play());
+        }
         onComplete();
-      } else if (current.remainDuration.inMilliseconds < 100 && (current.doneRounds + 1) < trainingMenu.rounds) {
-        unawaited(alarmPlayer?.play());
+      } else if (current.remainDuration.inMilliseconds < 100) {
+        if (trainingMenu.rounds > 0 && (current.doneRounds + 1) < trainingMenu.rounds) {
+          unawaited(alarmPlayer?.play());
+        } else if (trainingMenu.rounds == -1) {
+          unawaited(alarmPlayer?.play());
+        }
       }
     }
 
@@ -78,10 +87,12 @@ class CountdownScreen extends HookConsumerWidget {
       countdownTimer.value?.cancel();
       trainingUseCase.update(trainingMenu);
       stateUseCase.pauseTraining();
+      unawaited(clickPlayer?.play());
     }
 
     void stopTraining() {
       stateUseCase.stopTraining();
+      unawaited(clickPlayer?.play());
     }
 
     return SizedBox.expand(
@@ -94,7 +105,10 @@ class CountdownScreen extends HookConsumerWidget {
               flex: 1,
               child: SizedBox.expand(
                 child: HomeSideMenu(
-                  durationOption: (isInterval ?? true) ? .rest : .running,
+                  durationOptions: {
+                    if (isInterval == true) HomeSideMenuDurationOption.rest,
+                    if (isInterval == false) HomeSideMenuDurationOption.running,
+                  },
                   currentRound: (doneRound ?? 0) + 1,
                   totalRound: trainingMenu.rounds,
                   onTapStop: stopTraining,

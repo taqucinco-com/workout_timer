@@ -7,6 +7,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:workout_timer/feature/recognizer/speech_recognizer.provider.dart';
 import 'package:workout_timer/feature/workout/workout_command_usecase.provider.dart';
 import 'package:workout_timer/feature/workout/workout_state.provider.dart';
+import 'package:workout_timer/feature/workout/workout_state_usecase.provider.dart';
+import 'package:workout_timer/framework/audio/audio_player_map.provider.dart';
 import 'package:workout_timer/page/home/screen/countdown_screen.dart';
 import 'package:workout_timer/page/home/screen/interval_time_setting_screen.dart';
 import 'package:workout_timer/page/home/screen/paused_screen.dart';
@@ -20,8 +22,9 @@ class HomePage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(workoutStateProvider);
-    final commandUseCase = ref.watch(workoutCommandUseCaseProvider);
     final recognizer = ref.watch(speechRecognizerProvider);
+    final commandUseCase = ref.watch(workoutCommandUseCaseProvider);
+    final workoutStateUseCase = ref.watch(workoutStateUseCaseProvider);
 
     final recording = useStream(recognizer.onRecording());
     final animationController = useAnimationController(duration: const Duration(milliseconds: 1000));
@@ -39,20 +42,20 @@ class HomePage extends HookConsumerWidget {
       ColorTween(begin: Colors.blue.shade400, end: Colors.blue.shade100).animate(animationController),
     );
 
-    // Future<void> runChannel() async {
-    //   try {
-    //     final result = await useCase.analyzeCommand('5分のトレーニングでインターバルは30秒間、それを4セットやりたい');
-    //     if (result == null) return;
-    //     final commands = await useCase.convertCommand(result);
-    //     debugPrint('$commands');
-    //   } on PlatformException catch (e) {
-    //     debugPrint("${e.message}");
-    //   }
-    // }
-
     useEffect(() {
-      final subscription = recognizer.onRecognizedText().listen((event) {
-        debugPrint('$event');
+      final subscription = recognizer.onRecognizedText().listen((event) async {
+        debugPrint('[wt recognized]: $event');
+        if (event.isEmpty) return;
+        // e.g. event = 5分のトレーニングでインターバルは30秒間、それを4セットやりたい
+        final result = await commandUseCase.analyzeCommand(event);
+        if (result == null) return;
+        final commands = await commandUseCase.convertCommand(result);
+        debugPrint('[wt commands]: ${commands.toString()}');
+        final newState = await workoutStateUseCase.execute(commands);
+        if (newState == .trainingCountdown || newState == .paused || newState == .waitingForTraining) {
+          final clickPlayer = ref.read(audioPlayerMap).getPlayers(.click);
+          unawaited(clickPlayer?.play());
+        }
       });
       return subscription.cancel;
     }, []);
@@ -62,7 +65,7 @@ class HomePage extends HookConsumerWidget {
         try {
           await recognizer.idle();
         } on PlatformException catch (e) {
-          debugPrint("${e.message}");
+          debugPrint('[wt error]${e.message}');
         }
       }
 

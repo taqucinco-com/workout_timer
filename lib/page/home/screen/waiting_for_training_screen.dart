@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -6,6 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:workout_timer/component/duration_led.dart';
 import 'package:workout_timer/feature/training/training.provider.dart';
 import 'package:workout_timer/feature/workout/workout_state_usecase.provider.dart';
+import 'package:workout_timer/framework/audio/audio_player_map.provider.dart';
 import 'package:workout_timer/framework/build_context_ext.dart'; // Import DurationLed
 import 'package:workout_timer/page/home/component/home_side_menu.dart';
 
@@ -18,6 +20,9 @@ class WaitingForTrainingScreen extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final useCase = ref.watch(workoutStateUseCaseProvider);
     final trainingDuration = duration ?? ref.watch(trainingMenuProvider.select((s) => s.trainingDuration));
+    final intervalDuration =
+        duration ?? ref.watch(trainingMenuProvider.select((s) => s.intervalDuration)) ?? Duration.zero;
+    final clickPlayer = ref.watch(audioPlayerMap.select((s) => s.getPlayers(.click)));
     final trainingTotalRound = totalRound ?? ref.watch(trainingMenuProvider.select((s) => s.rounds)) ?? 1;
 
     final timerAreaKey = useMemoized(() => GlobalKey(), []);
@@ -37,6 +42,7 @@ class WaitingForTrainingScreen extends HookConsumerWidget {
 
     void startTraining() {
       useCase.startTraining();
+      unawaited(clickPlayer?.play());
     }
 
     return SizedBox.expand(
@@ -50,7 +56,7 @@ class WaitingForTrainingScreen extends HookConsumerWidget {
               child: SizedBox.expand(
                 child: HomeSideMenu(
                   onTapProgram: transferProgram,
-                  durationOption: .running,
+                  durationOptions: {.running, if (intervalDuration > Duration.zero) .rest},
                   currentRound: 1,
                   onTapStart: startTraining,
                   totalRound: trainingTotalRound,

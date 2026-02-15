@@ -29,4 +29,9 @@ class TrainingMenu {
       rounds: rounds ?? this.rounds,
     );
   }
+
+  @override
+  String toString() {
+    return 'TrainingMenu(trainingDuration: $trainingDuration, intervalDuration: $intervalDuration, rounds: $rounds)';
+  }
 }

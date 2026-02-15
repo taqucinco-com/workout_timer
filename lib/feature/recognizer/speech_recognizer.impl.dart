@@ -30,7 +30,7 @@ class SpeechRecognizerImpl implements SpeechRecognizer {
           final previous = _textSubject.value;
           _textSubject.add(e); // 今までの全文を記録しておく
           final escapedPrevious = RegExp.escape(previous);
-          return e.replaceFirst(RegExp('$escapedPrevious'), '');
+          return e.replaceFirst(RegExp(escapedPrevious), '');
         });
   }
 

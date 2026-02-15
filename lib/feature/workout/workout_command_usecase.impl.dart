@@ -13,7 +13,7 @@ class WorkoutCommandUsecaseImpl implements WorkoutCommandUseCase {
   
   @override
   Future<String?> analyzeCommand(String text) async {
-    return await _methodChannel.invokeMethod<String>('analyzeCommand', '5分のトレーニングでインターバルは30秒間、それを4セットやりたい');
+    return await _methodChannel.invokeMethod<String>('analyzeCommand', text);
   }
 
   @override
@@ -35,7 +35,6 @@ class WorkoutCommandUsecaseImpl implements WorkoutCommandUseCase {
               commands.add(TrainingDurationSet(Duration(hours: hours, minutes: minutes, seconds: seconds)));
             }
           }
-          break;
         case 'set-interval':
           if (schema.parameter != null) {
             final parts = schema.parameter!.split(':');
@@ -46,7 +45,6 @@ class WorkoutCommandUsecaseImpl implements WorkoutCommandUseCase {
               commands.add(IntervalDurationSet(Duration(hours: hours, minutes: minutes, seconds: seconds)));
             }
           }
-          break;
         case 'set-round':
           if (schema.parameter != null) {
             final count = int.tryParse(schema.parameter!);
@@ -54,10 +52,11 @@ class WorkoutCommandUsecaseImpl implements WorkoutCommandUseCase {
               commands.add(RoundSet(count));
             }
           }
-          break;
         case 'start-command':
           commands.add(const TrainingStart());
-          break;
+        case 'stop-command':
+          commands.add(const TrainingStop());
+          commands.add(const TrainingPause());
         // 'nothing' やその他のコマンドは無視
       }
     }

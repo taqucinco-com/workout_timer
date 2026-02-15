@@ -54,7 +54,8 @@ class IntervalTimeSettingScreen extends HookConsumerWidget {
               flex: 1,
               child: SizedBox.expand(
                 child: HomeSideMenu(
-                  durationOption: .rest, onTapSet: toNext,
+                  durationOptions: {.rest},
+                  onTapSet: toNext,
                   onTapReset: clearTimer,
                 ),
               ),

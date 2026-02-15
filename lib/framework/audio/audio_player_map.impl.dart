@@ -8,10 +8,12 @@ class AudioPlayerMapImpl implements apm.AudioPlayerMap {
   final Map<apm.AudioSource, AudioPlayer> _players = {
     apm.AudioSource.alarm: AudioPlayer(),
     apm.AudioSource.gong: AudioPlayer(),
+    apm.AudioSource.click: AudioPlayer(),
   };
 
   late final StreamSubscription<PlaybackEvent>? _alarmSubscription;
   late final StreamSubscription<PlaybackEvent>? _gongSubscription;
+  late final StreamSubscription<PlaybackEvent>? _clickSubscription;
 
   AudioPlayerMapImpl() {
     unawaited(_initialize());
@@ -21,6 +23,7 @@ class AudioPlayerMapImpl implements apm.AudioPlayerMap {
     try {
       await _players[apm.AudioSource.alarm]?.setAsset('assets/sounds/alarm.mp3');
       await _players[apm.AudioSource.gong]?.setAsset('assets/sounds/gong.mp3');
+      await _players[apm.AudioSource.click]?.setAsset('assets/sounds/pi.mp3');
 
       _alarmSubscription = _players[apm.AudioSource.alarm]?.playbackEventStream.listen((event) async {
         if (event.processingState == .completed) {
@@ -36,6 +39,13 @@ class AudioPlayerMapImpl implements apm.AudioPlayerMap {
           _players[apm.AudioSource.gong]?.seek(Duration.zero);
         }
       });
+      _clickSubscription = _players[apm.AudioSource.click]?.playbackEventStream.listen((event) async {
+        if (event.processingState == .completed) {
+          await Future.delayed(Duration(milliseconds: (1028 * 1000 / 44100).toInt()));
+          _players[apm.AudioSource.click]?.stop();
+          _players[apm.AudioSource.click]?.seek(Duration.zero);
+        }
+      });
     } catch (e) {
       debugPrint('$e');
     }
@@ -44,7 +54,10 @@ class AudioPlayerMapImpl implements apm.AudioPlayerMap {
   void dispose() {
     _alarmSubscription?.cancel();
     _gongSubscription?.cancel();
-
+    _clickSubscription?.cancel();
+    _players[apm.AudioSource.alarm]?.dispose();
+    _players[apm.AudioSource.gong]?.dispose();
+    _players[apm.AudioSource.click]?.dispose();
   }
 
   @override

@@ -53,7 +53,7 @@ class TrainingUseCaseImpl implements TrainingUseCase {
           doneRounds: progress.doneRounds + 1,
         );
       } else {
-        if (progress.doneRounds + 1 >= trainingMenu.rounds) {
+        if (progress.doneRounds + 1 >= trainingMenu.rounds && trainingMenu.rounds > 0) {
           _progressController.state = null;
           return null;
         }

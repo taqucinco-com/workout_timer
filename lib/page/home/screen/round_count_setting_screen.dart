@@ -48,18 +48,20 @@ class RoundCountSettingScreen extends HookConsumerWidget {
     }
 
     void incrementRounds() {
-      if (pendingRounds.value < 99) {
-        pendingRounds.value++;
+      if (pendingRounds.value == -1) {
+        pendingRounds.value = 1;
+      } else {
+        pendingRounds.value = min(pendingRounds.value + 1, 99);
       }
     }
 
     void decrementRounds() {
-      if (pendingRounds.value > 1) {
+      if (pendingRounds.value == 1) {
+        pendingRounds.value = -1;
+      } else if (pendingRounds.value > 1) {
         pendingRounds.value--;
       }
     }
-
-    final roundString = pendingRounds.value.toString().padLeft(2, '0');
 
     return SizedBox.expand(
       child: Container(
@@ -71,7 +73,7 @@ class RoundCountSettingScreen extends HookConsumerWidget {
               flex: 1,
               child: SizedBox.expand(
                 child: HomeSideMenu(
-                  durationOption: null, // No duration option for round setting
+                  durationOptions: {},
                   onTapSet: toNext,
                   onTapReset: clearTimer,
                 ),
@@ -96,7 +98,7 @@ class RoundCountSettingScreen extends HookConsumerWidget {
                             SizedBox(width: 24),
                             if (timerAreaSize.value.width > 0 && timerAreaSize.value.height > 0)
                               _BlinkingRoundCount(
-                                roundString: roundString,
+                                rounds: pendingRounds.value,
                                 color: Colors.orange.shade700,
                                 segmentSize: Size(
                                   min(96.0, timerAreaSize.value.width * 0.2),
@@ -140,12 +142,12 @@ class RoundCountSettingScreen extends HookConsumerWidget {
 
 class _BlinkingRoundCount extends HookWidget {
   const _BlinkingRoundCount({
-    required this.roundString,
+    required this.rounds,
     required this.color,
     required this.segmentSize,
   });
 
-  final String roundString;
+  final int rounds;
   final Color color;
   final Size segmentSize;
 
@@ -166,6 +168,19 @@ class _BlinkingRoundCount extends HookWidget {
         end: color.withAlpha((256 / 10).toInt()),
       ).animate(animationController),
     );
+
+    if (rounds == -1) {
+      return Text(
+        '∞',
+        style: TextStyle(
+          color: animatedColor ?? color,
+          fontSize: segmentSize.height,
+          fontWeight: FontWeight.bold,
+        ),
+      );
+    }
+
+    final roundString = rounds.toString().padLeft(2, '0');
 
     return Row(
       children: [

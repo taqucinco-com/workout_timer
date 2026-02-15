@@ -1,4 +1,5 @@
 import 'package:workout_timer/feature/workout/workout_command.dart';
+import 'package:workout_timer/feature/workout/workout_state.dart';
 
 abstract class WorkoutStateUseCase {
   Future<void> transferToProgram();
@@ -9,4 +10,5 @@ abstract class WorkoutStateUseCase {
   Future<void> stopTraining();
   Future<void> pauseTraining();
   Future<void> resumeTraining();
+  Future<WorkoutState?> execute(List<WorkoutCommand> commands);
 }
