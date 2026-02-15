@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -6,6 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:workout_timer/component/duration_led.dart';
 import 'package:workout_timer/feature/training/training.provider.dart';
 import 'package:workout_timer/feature/workout/workout_state_usecase.provider.dart';
+import 'package:workout_timer/framework/audio/audio_player_map.provider.dart';
 import 'package:workout_timer/framework/build_context_ext.dart';
 import 'package:workout_timer/page/home/component/home_side_menu.dart';
 
@@ -19,6 +21,7 @@ class PausedScreen extends HookConsumerWidget {
     final remainDuration = ref.watch(trainingProgressProvider.select((s) => s?.remainDuration));
     final isInterval = ref.watch(trainingProgressProvider.select((s) => s?.isInterval));
     final doneRound = ref.watch(trainingProgressProvider.select((s) => s?.doneRounds));
+    final clickPlayer = ref.watch(audioPlayerMap.select((s) => s.getPlayers(.click)));
 
     final timerAreaKey = useMemoized(() => GlobalKey(), []);
     final timerAreaSize = useState(Size(0, 0));
@@ -31,10 +34,14 @@ class PausedScreen extends HookConsumerWidget {
       }
     }
 
-    void resume() {}
+    void resume() {
+      stateUseCase.resumeTraining();
+      unawaited(clickPlayer?.play());
+    }
 
     void stopTraining() {
       stateUseCase.stopTraining();
+      unawaited(clickPlayer?.play());
     }
 
     return SizedBox.expand(
@@ -47,7 +54,10 @@ class PausedScreen extends HookConsumerWidget {
               flex: 1,
               child: SizedBox.expand(
                 child: HomeSideMenu(
-                  durationOption: (isInterval ?? true) ? .rest : .running,
+                  durationOptions: {
+                    if (isInterval == true) HomeSideMenuDurationOption.rest,
+                    if (isInterval == false) HomeSideMenuDurationOption.running,
+                  },
                   currentRound: (doneRound ?? 0) + 1,
                   totalRound: trainingMenu.rounds,
                   onTapStop: stopTraining,

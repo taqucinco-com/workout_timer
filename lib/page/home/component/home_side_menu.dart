@@ -12,7 +12,7 @@ class HomeSideMenu extends HookConsumerWidget {
   final VoidCallback? onTapPause;
   final VoidCallback? onTapStop;
   final VoidCallback? onTapResume;
-  final HomeSideMenuDurationOption? durationOption;
+  final Set<HomeSideMenuDurationOption> durationOptions;
   final int currentRound;
   final int totalRound;
 
@@ -25,7 +25,7 @@ class HomeSideMenu extends HookConsumerWidget {
     this.onTapPause,
     this.onTapStop,
     this.onTapResume,
-    this.durationOption,
+    this.durationOptions = const {},
     this.currentRound = 1,
     this.totalRound = 1,
   });
@@ -215,7 +215,6 @@ class HomeSideMenu extends HookConsumerWidget {
                     ),
                   ],
                 ),
-                _ => SizedBox.shrink(),
               },
             ),
             const SizedBox(height: 16),
@@ -223,18 +222,24 @@ class HomeSideMenu extends HookConsumerWidget {
               children: [
                 Icon(
                   Icons.directions_run,
-                  color: durationOption == .running ? Colors.orange.shade700 : Colors.grey,
+                  color: durationOptions.contains(HomeSideMenuDurationOption.running)
+                      ? Colors.orange.shade700
+                      : Colors.grey,
                   size: 32,
                 ),
                 const SizedBox(width: 8),
                 Icon(
                   Icons.airline_seat_recline_normal,
-                  color: durationOption == .rest ? Colors.orange.shade700 : Colors.grey,
+                  color: durationOptions.contains(HomeSideMenuDurationOption.rest)
+                      ? Colors.orange.shade700
+                      : Colors.grey,
                   size: 32,
                 ),
               ],
             ),
-            Text('$currentRound/$totalRound set', style: TextStyle(fontSize: 24, color: Colors.orange.shade700)),
+            totalRound >= 1
+                ? Text('$currentRound/$totalRound set', style: TextStyle(fontSize: 24, color: Colors.orange.shade700))
+                : Text('∞ set', style: TextStyle(fontSize: 24, color: Colors.orange.shade700)),
           ],
         ),
       ),

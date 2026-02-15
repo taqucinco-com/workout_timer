@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:workout_timer/framework/audio/audio_player_map.provider.dart';
 import 'package:workout_timer/framework/life_cycle/life_cycle_listener.provider.dart';
 import 'package:workout_timer/router.dart';
 
@@ -50,6 +51,8 @@ class _EagerInitialization extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(lifeCycleListenerProvider.select((s) => null));
+    ref.watch(audioPlayerMap.select((s) => null));
+    
     return child;
   }
 }

@@ -4,7 +4,7 @@ import 'package:workout_timer/feature/workout/workout_state.provider.dart';
 import 'package:workout_timer/feature/workout/workout_state_usecase.dart';
 import 'package:workout_timer/feature/workout/workout_state_usecase.impl.dart';
 
-final workoutStateUseCaseProvider = Provider<WorkoutSateUseCase>((ref) {
+final workoutStateUseCaseProvider = Provider<WorkoutStateUseCase>((ref) {
   final workoutStateNotifier = ref.read(workoutStateProvider.notifier);
   final pendingTrainingMenuNotifier = ref.read(pendingTrainingMenuProvider.notifier);
   final trainingMenuNotifier = ref.read(trainingMenuProvider.notifier);
