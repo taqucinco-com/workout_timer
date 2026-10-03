@@ -1,0 +1,102 @@
+name: Android emulator dry run
+
+on:
+  workflow_dispatch:
+
+jobs:
+  android-emulator-integration-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: develop
+    env:
+      ANDROID_API_LEVEL: "34"
+      ANDROID_AVD_NAME: "ci_test"
+      ANDROID_AVD_TARGET: "google_apis"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: AVD cache
+        uses: actions/cache@v6
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+            /usr/local/lib/android/sdk/system-images/android-${{ env.ANDROID_API_LEVEL }}
+          key: avd-${{ env.ANDROID_API_LEVEL }}-${{ env.ANDROID_AVD_TARGET }}
+
+      - name: Remove stale emulator lock files from cached AVD
+        run: |
+          mkdir -p ~/.android/avd
+          find ~/.android/avd -name "*.lock" -print -exec rm -rf {} +
+
+      # AVD作成（SDKコンポーネントの用意・system-image取得・avdmanager呼び出し・1回起動しての
+      # ブート確認）はreactivecircusに任せる。killされるのはこのステップ内で起動した
+      # エミュレータのプロセスだけで、AVD自体（~/.android/avd/配下のファイル）は残るため、
+      # 後続のステップから同じ名前(avd-name)で自前起動できる。
+      - name: create and check booting AVD (via reactivecircus/android-emulator-runner)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ env.ANDROID_API_LEVEL }}
+          avd-name: ${{ env.ANDROID_AVD_NAME }}
+          force-avd-creation: false
+          target: ${{ env.ANDROID_AVD_TARGET }}
+          arch: "x86_64"
+          script: echo "AVD created and boot-verified by reactivecircus."
+
+      # ここから先は reactivecircus/android-emulator-runner に依存しない。
+      - name: Start Android emulator (background, without reactivecircus)
+        run: |
+          nohup "$ANDROID_HOME/emulator/emulator" -avd "$ANDROID_AVD_NAME" -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim > /tmp/emulator.log 2>&1 &
+          disown
+          # shellcheck disable=SC2016 # このコマンドはadb shell経由でAndroidデバイス側で評価される想定であり、CIランナー側で展開してはいけない
+          "$ANDROID_HOME/platform-tools/adb" wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 3; done'
+          "$ANDROID_HOME/platform-tools/adb" devices
+
+      - name: Capture screenshot
+        if: always()
+        run: |
+          mkdir -p work
+          adb -s emulator-5554 exec-out screencap -p > work/screencap.png
+
+      - name: Record screen
+        if: always()
+        run: |
+          mkdir -p work
+          adb -s emulator-5554 shell screenrecord /data/local/tmp/screenrecord.mp4 &
+          sleep 10
+          # ここで録画中に任意の操作を行う想定
+          adb -s emulator-5554 shell pkill -SIGINT screenrecord
+          wait
+          adb -s emulator-5554 pull /data/local/tmp/screenrecord.mp4 work/screenrecord.mp4
+
+      - name: Upload screenshot and screen recording artifacts
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: screencap
+          path: |
+            work/screencap.png
+            work/screenrecord.mp4
+
+      - name: Dump emulator log on failure
+        if: failure()
+        run: cat /tmp/emulator.log || true
+
+      - name: Stop Android emulator
+        if: always()
+        run: |
+          adb -s emulator-5554 emu kill || true
+          for _ in $(seq 1 30); do
+            adb devices 2>/dev/null | grep -q emulator-5554 || break
+            sleep 1
+          done
