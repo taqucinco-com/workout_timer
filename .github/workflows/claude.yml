@@ -44,16 +44,20 @@ jobs:
       - name: React with eyes to acknowledge the trigger
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EVENT_NAME: ${{ github.event_name }}
+          REPO: ${{ github.repository }}
+          COMMENT_ID: ${{ github.event.comment.id }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
-          case "${{ github.event_name }}" in
+          case "$EVENT_NAME" in
             issue_comment)
-              gh api "repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions" -f content=eyes || true
+              gh api "repos/$REPO/issues/comments/$COMMENT_ID/reactions" -f content=eyes || true
               ;;
             pull_request_review_comment)
-              gh api "repos/${{ github.repository }}/pulls/comments/${{ github.event.comment.id }}/reactions" -f content=eyes || true
+              gh api "repos/$REPO/pulls/comments/$COMMENT_ID/reactions" -f content=eyes || true
               ;;
             issues)
-              gh api "repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/reactions" -f content=eyes || true
+              gh api "repos/$REPO/issues/$ISSUE_NUMBER/reactions" -f content=eyes || true
               ;;
           esac
 
@@ -116,14 +120,17 @@ jobs:
 
       - name: Extract model selection
         id: model_selection
+        env:
+          # 判定結果はLLM出力（Issue/PR本文の影響を受ける）なので、シェルへ直接展開せず環境変数経由で渡す
+          JUDGMENT: ${{ steps.judge_complexity.outputs.result }}
         run: |
-          JUDGMENT='${{ steps.judge_complexity.outputs.result }}'
-          MODEL=$(echo "$JUDGMENT" | grep -oP '"model"\s*:\s*"\K[^"]+' | head -1)
-          # フォールバック: 判定失敗時はSonnetを使用
-          if [ -z "$MODEL" ]; then
-            MODEL="sonnet"
-          fi
-          echo "model=$MODEL" >> $GITHUB_OUTPUT
+          MODEL=$(printf '%s' "$JUDGMENT" | grep -oP '"model"\s*:\s*"\K[^"]+' | head -1 || true)
+          # --modelへ渡す値なので許可リスト以外は採用せず、判定失敗時もSonnetにフォールバックする
+          case "$MODEL" in
+            haiku|sonnet|opus) ;;
+            *) MODEL="sonnet" ;;
+          esac
+          echo "model=$MODEL" >> "$GITHUB_OUTPUT"
           echo "Model selected: $MODEL"
 
       - name: Run Claude Code

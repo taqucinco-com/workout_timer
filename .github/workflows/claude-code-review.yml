@@ -36,11 +36,17 @@ jobs:
       - name: Extract review perspective from comment (if issue_comment trigger)
         id: review_perspective
         if: github.event_name == 'issue_comment'
+        env:
+          # コメント本文は信頼できない入力のため、${{ }}をrunスクリプトへ直接展開せず環境変数経由で渡す
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          COMMENT_URL: ${{ github.event.comment.html_url }}
         run: |
           # /claude-review の後の部分を抽出
-          PERSPECTIVE=$(echo "${{ github.event.comment.body }}" | sed -n 's|^/claude-review\s*||p' | head -c 500)
-          echo "perspective=${PERSPECTIVE}" >> $GITHUB_OUTPUT
-          echo "comment_url=${{ github.event.comment.html_url }}" >> $GITHUB_OUTPUT
+          PERSPECTIVE=$(printf '%s\n' "$COMMENT_BODY" | sed -n 's|^/claude-review\s*||p' | head -c 500)
+          # 改行を含む値でGITHUB_OUTPUTに別キーを注入されないよう、改行を除去してから書き込む
+          PERSPECTIVE=$(printf '%s' "$PERSPECTIVE" | tr '\r\n' '  ')
+          echo "perspective=${PERSPECTIVE}" >> "$GITHUB_OUTPUT"
+          echo "comment_url=${COMMENT_URL}" >> "$GITHUB_OUTPUT"
 
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -52,21 +58,27 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_BODY: ${{ github.event.pull_request.body }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
         run: |
           printf '%s' "$PR_BODY" | sed 's/- \[x\] <!-- claude-review-check -->/- [ ] <!-- claude-review-check -->/' > /tmp/pr-body.md
           if diff -q <(printf '%s' "$PR_BODY") /tmp/pr-body.md > /dev/null; then
             echo "::error::チェックボックスの置換パターンが本文とマッチしませんでした"
             exit 1
           fi
-          gh pr edit ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --body-file /tmp/pr-body.md
+          gh pr edit "$PR_NUMBER" --repo "$REPO" --body-file /tmp/pr-body.md
 
       - name: Determine PR number
         id: pr_number
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          if [ "${{ github.event_name }}" == "issue_comment" ]; then
-            echo "number=${{ github.event.issue.number }}" >> $GITHUB_OUTPUT
+          if [ "$EVENT_NAME" == "issue_comment" ]; then
+            echo "number=${ISSUE_NUMBER}" >> "$GITHUB_OUTPUT"
           else
-            echo "number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+            echo "number=${PR_NUMBER}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Run Claude Code Review
