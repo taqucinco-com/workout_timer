@@ -61,30 +61,29 @@ jobs:
               ;;
           esac
 
-      - name: Set up Flutter (from mobile/.fvmrc)
+      - name: Set up Flutter (from .fvmrc)
         id: flutter_setup
         uses: kuhnroyal/flutter-fvm-config-action@v3
         with:
-          path: mobile/.fvmrc
+          path: .fvmrc
           setup: "true"
           cache: "true"
 
       - name: Dart build_runner cache
         uses: actions/cache@v6
         with:
-          path: mobile/.dart_tool
-          key: dart-tool-${{ runner.os }}-${{ steps.flutter_setup.outputs.FLUTTER_VERSION }}-${{ hashFiles('mobile/pubspec.lock') }}
+          path: .dart_tool
+          key: dart-tool-${{ runner.os }}-${{ steps.flutter_setup.outputs.FLUTTER_VERSION }}-${{ hashFiles('pubspec.lock') }}
           restore-keys: |
             dart-tool-${{ runner.os }}-${{ steps.flutter_setup.outputs.FLUTTER_VERSION }}-
 
       - name: Install Flutter dependencies and generate code
-        working-directory: mobile
         run: |
           flutter pub get
           dart run build_runner build --delete-conflicting-outputs
 
       - name: Discard codegen changes to tracked files
-        run: git checkout -- mobile/
+        run: git checkout -- .
 
       - name: Judge task complexity and select model
         id: judge_complexity
@@ -170,11 +169,9 @@ jobs:
           claude_args: >-
             --model ${{ steps.model_selection.outputs.model }}
             --allowedTools "Agent,
-            Bash(cd mobile && dart:*),
-            Bash(cd mobile && flutter:*),
             Bash(dart:*),
-            Bash(echo:*),
             Bash(flutter:*),
+            Bash(echo:*),
             Bash(gh issue comment:*),
             Bash(gh issue list:*),
             Bash(gh issue view:*),
