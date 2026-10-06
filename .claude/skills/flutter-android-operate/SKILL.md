@@ -31,13 +31,9 @@ until adb devices | grep -q "emulator-5554.*device$"; do sleep 2; done
 
 ```bash
 cd mobile
-nohup fvm flutter run -d emulator-5554 --dart-define-from-file=.env.local > /tmp/flutter_run.log 2>&1 &
+nohup fvm flutter run -d emulator-5554 > /tmp/flutter_run.log 2>&1 &
 disown
 ```
-
-`--dart-define-from-file=.env.local`はGoogle Maps APIキー（Androidは`GOOGLE_MAP_KEY_ANDROID`）等のシークレットを読み込むために必須。省略すると地図画面（`MapScreen`）が空白のまま表示される。
-
-**`.env.local`は`mobile/`直下にある**（雛形は`mobile/.env.sample`）。リポジトリ直下ではないので`../`を付けない。
 
 起動完了待ち（同じく`run_in_background`+通知待ち）:
 

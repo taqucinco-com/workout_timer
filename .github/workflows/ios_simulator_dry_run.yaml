@@ -19,15 +19,6 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Create mobile/.env.local from .env.sample
-        env:
-          GOOGLE_MAP_KEY_ANDROID: ${{ secrets.GOOGLE_MAP_KEY_ANDROID }}
-          GOOGLE_MAP_KEY_IOS: ${{ secrets.GOOGLE_MAP_KEY_IOS }}
-        run: |
-          sed -e "s|{YOUR_GOOGLE_MAP_KEY_ANDROID_HERE}|$GOOGLE_MAP_KEY_ANDROID|" \
-              -e "s|{YOUR_GOOGLE_MAP_KEY_IOS_HERE}|$GOOGLE_MAP_KEY_IOS|" \
-              mobile/.env.sample > mobile/.env.local
-
       # CocoaPodsのバージョンはGemfile(cocoapods ~> 1.17.0)で固定しているので、
       # ランナーにプリインストールされたpodではなくbundler経由のものを使う。
       - name: Set up Ruby (from .ruby-version)
@@ -144,7 +135,7 @@ jobs:
       # Androidと同じテストを同じ形で実行する。シミュレータ向けビルドなので署名は不要。
       - name: Run integration test on iOS simulator
         working-directory: mobile
-        run: flutter test integration_test/app_test.dart -d "$SIMULATOR_UDID" --dart-define-from-file=.env.local
+        run: flutter test integration_test/app_test.dart -d "$SIMULATOR_UDID"
 
       # シミュレータ起動前に落ちた場合はUDIDが無いので撮らない（無駄な赤いステップを増やさない）。
       - name: Capture screenshot

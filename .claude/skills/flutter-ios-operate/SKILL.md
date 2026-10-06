@@ -53,19 +53,17 @@ idb connect <UDID>
 
 ```bash
 cd mobile
-nohup fvm flutter run -d <UDID> --dart-define-from-file=.env.local > /tmp/flutter_run_ios.log 2>&1 &
+nohup fvm flutter run -d <UDID> > /tmp/flutter_run_ios.log 2>&1 &
 disown
 ```
 
 注意点:
 
 - **`-d <UDID>`は必ず明示する。** この開発機には物理iPhoneがネットワーク越しに接続されていることがあり（`flutter devices`に`sudo iPhone17 (wireless)`として現れる）、デバイス指定を省くと実機側にデプロイされうる。
-- **`.env.local`は`mobile/`直下にある**（`mobile/.env.sample`が雛形）。リポジトリ直下ではない。
-- iOSの地図キーは`GOOGLE_MAP_KEY_ANDROID`ではなく**`GOOGLE_MAP_KEY_IOS`**（キーはプラットフォームごとに分かれている）。`mobile/ios/Runner/AppDelegate.swift`がInfo.plistの`DartDefines`経由で読む仕組みのため、**ビルド時に埋め込まれる**。キーを変えた場合はhot restartでは反映されず、ビルドし直しが必要。省略・誤りがあると地図画面（`MapScreen`）が空白になる。
 - 初回やPods更新後は、CONTRIBUTING.md記載の事前ビルドが必要になることがある。
 
   ```bash
-  cd mobile && fvm flutter build ios --dart-define-from-file=.env.local
+  cd mobile && fvm flutter build ios
   ```
 
 起動完了待ちは`run_in_background`付きBashで行い、完了通知を待つ（sleepループを直接待たない）:

@@ -9,11 +9,11 @@ description: GitHub Actions CI上でicecream_log(mobile/)をiOS Simulatorで起�
 
 ## なぜ別スキルにしたか
 
-CIの`claude-ios`ワークフロー（`.github/workflows/claude-ios.yaml`）はGitHub Actionsのmacosランナー上で動き、ローカル開発環境とは前提が異なる。`fvm`は無く`flutter`コマンドをそのまま使う、CocoaPodsや`idb-companion`をジョブごとに都度インストールする、`.env.local`をSecretsから生成する、といった違いがある。またAndroid版CIスキル（`flutter-android-operate-ci`）と同様、非対話的なBash権限モデルでは`nohup <cmd> > file 2>&1 &`のようなバックグラウンド化・出力リダイレクトを伴うコマンドが拒否されやすいため、`flutter run`の代わりに単発コマンドの組み合わせでアプリを起動する。
+CIの`claude-ios`ワークフロー（`.github/workflows/claude-ios.yaml`）はGitHub Actionsのmacosランナー上で動き、ローカル開発環境とは前提が異なる。`fvm`は無く`flutter`コマンドをそのまま使う、CocoaPodsや`idb-companion`をジョブごとに都度インストールする、といった違いがある。またAndroid版CIスキル（`flutter-android-operate-ci`）と同様、非対話的なBash権限モデルでは`nohup <cmd> > file 2>&1 &`のようなバックグラウンド化・出力リダイレクトを伴うコマンドが拒否されやすいため、`flutter run`の代わりに単発コマンドの組み合わせでアプリを起動する。
 
 ## 前提
 
-- ワークフロー側で既にiOS Simulatorの作成・起動、`idb-companion`/`idb-cli`のインストール、`idb connect`、CocoaPods/Flutterセットアップ、`mobile/.env.local`生成まで完了した状態でこのスキルが呼ばれる。`xcrun simctl list devices booted`と`idb list-targets`で起動・接続済みであることを確認してから進める。
+- ワークフロー側で既にiOS Simulatorの作成・起動、`idb-companion`/`idb-cli`のインストール、`idb connect`、CocoaPods/Flutterセットアップまで完了した状態でこのスキルが呼ばれる。`xcrun simctl list devices booted`と`idb list-targets`で起動・接続済みであることを確認してから進める。
 - CIには`fvm`はインストールされていないため、`flutter`/`dart`コマンドをそのまま使う。
 - モノレポ構成のため、Flutterコマンドはすべて`cd mobile && <コマンド>`の形で実行する。
 - `simctl`/`idb`コマンドが`CoreSimulatorService`やidbのソケットに接続できず失敗する場合、ローカル環境（`flutter-ios-operate`skillの0節）と同じ理由でBashツールのサンドボックス制約が疑われる。その場合は`dangerouslyDisableSandbox: true`を付けて再実行すること（macOSランナーでも同じ制約が起こりうる。未確認の場合はまず制約無しで試し、`CoreSimulatorService connection became invalid`等のエラーが出たら切り替える）。
@@ -29,10 +29,10 @@ UDID=$(xcrun simctl list devices booted -j | jq -r '.devices[][0].udid')
 ## アプリをビルド・インストール・起動する
 
 ```bash
-cd mobile && flutter build ios --debug --simulator --dart-define-from-file=.env.local
+cd mobile && flutter build ios --debug --simulator
 ```
 
-`.env.local`は`mobile/`直下（ローカルと同じ位置）。ワークフロー側の"Create mobile/.env.local from .env.sample"ステップが生成済みなので、このスキル側で作る必要はない。シミュレータ向けビルドのため署名は不要。
+シミュレータ向けビルドのため署名は不要。
 
 ```bash
 xcrun simctl install "$UDID" mobile/build/ios/iphonesimulator/Runner.app

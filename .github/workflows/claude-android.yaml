@@ -94,9 +94,6 @@ jobs:
           mkdir -p ~/.android/avd
           find ~/.android/avd -name "*.lock" -print -exec rm -rf {} +
 
-      - name: Decode Debug Keystore
-        run: echo "${{ secrets.CI_DEBUG_KEYSTORE_BASE64 }}" | base64 -d > mobile/android/ci-debug.keystore
-
       - name: Set up Flutter (from mobile/.fvmrc)
         id: flutter_setup
         uses: kuhnroyal/flutter-fvm-config-action@v3
