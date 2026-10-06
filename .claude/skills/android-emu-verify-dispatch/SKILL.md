@@ -27,8 +27,8 @@ agentは以下の形式で応答する。
 以下の情報を集める。
 
 - `target_type`/`target_number`: 最初のプロンプトに「対象種別: pr/issue」「対象番号: ...」として直接渡されているので、それをそのまま使う（推測やコマンドでの再取得は不要）
-- `head_ref`: 検証対象のブランチ名。**PRコメント/PRレビュー由来の依頼の場合、`claude.yml`の`actions/checkout`は既定でベースブランチをチェックアウトしており、`git branch --show-current`はPRのhead refと一致しないことがある。** 必ず`gh pr view <PR番号> --json headRefName -q .headRefName`で取得すること（`--allowedTools`に`Bash(gh pr view:*)`として許可済みの単独コマンド）。Issueコメント由来で、Claude自身がこの turn で新規ブランチを作成・pushした場合は、そのブランチ名（`git branch --show-current`の結果）をそのまま使ってよい
-- `head_ref`のブランチがリモートに存在すること: `claude-android.yaml`/`claude-ios.yaml`は`actions/checkout`で`head_ref`をfetchするため、未pushのブランチを渡すとcheckoutで失敗する。新規ブランチを作成した場合は、起動前に`git push`済みであることを`git fetch origin <head_ref>`（単独コマンド）で確認し、fetchに失敗したら先に`git push -u origin <head_ref>`を実行する
+- `head_ref`: 検証対象のブランチ名。**PRコメント/PRレビュー由来の依頼の場合、`claude.yml`の`actions/checkout`は既定でベースブランチをチェックアウトしており、`git branch --show-current`はPRのhead refと一致しないことがある。** 必ず`gh pr view <PR番号> --json headRefName -q .headRefName`で取得すること（`--allowedTools`に`Bash(gh pr view:*)`として許可済みの単独コマンド）。Issueコメント由来の場合、`claude-code-action`が作業用ブランチ（`claude/issue-N-...`）をローカルに作成するが、このturnでコミット・pushしなければ終了時に削除され、リモートには存在しない。そのため、Claude自身がこのturnでコミットして`git push`した場合に限りそのブランチ名（`git branch --show-current`の結果）を使い、コミットしていない（検証のみの依頼など）場合は`main`を渡す
+- `head_ref`のブランチがリモートに存在すること: `actions/checkout`が`head_ref`をfetchするため、未pushのブランチを渡すとcheckoutで失敗する。コミットした場合は起動前に`git push`済みであることを`git fetch origin <head_ref>`（単独コマンド）で確認する
 - `original_request`: 依頼元のコメント本文。最初のプロンプトの「起動元コメント本文:」以下にそのまま渡されているので、それを使う
 - `judged_reason`: `android-pr-emu-need-checker`agentが返した理由をそのまま使う
 - `source_comment_url`: 起動元となった依頼コメント（またはIssue）のパーマリンク。この値は最初のプロンプト冒頭に「起動元コメントURL: ...」として直接渡されているので、それをそのまま使う。**`echo`/`printenv`/`env`等のBashコマンドで改めて取得しようとしないこと。** シェル変数展開（`$VAR`）を含むコマンドは、`Bash(echo:*)`等でコマンド自体が許可されていても「Contains simple_expansion」として承認待ちになり、非対話的なCI実行では失敗する（実際にIssue #68で発生した事故）。プロンプトに書かれている値を読んで使うだけでよい
