@@ -47,11 +47,11 @@ jobs:
           restore-keys: |
             pub-cache-${{ runner.os }}-
 
-      - name: Set up Flutter (from mobile/.fvmrc)
+      - name: Set up Flutter (from .fvmrc)
         id: flutter_setup
         uses: kuhnroyal/flutter-fvm-config-action@v3
         with:
-          path: mobile/.fvmrc
+          path: .fvmrc
           setup: "true"
           cache: "true"
 
