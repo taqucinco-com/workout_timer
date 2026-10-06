@@ -50,15 +50,6 @@ jobs:
           ref: ${{ inputs.head_ref }}
           fetch-depth: 1
 
-      - name: Create mobile/.env.local from .env.sample
-        env:
-          GOOGLE_MAP_KEY_ANDROID: ${{ secrets.GOOGLE_MAP_KEY_ANDROID }}
-          GOOGLE_MAP_KEY_IOS: ${{ secrets.GOOGLE_MAP_KEY_IOS }}
-        run: |
-          sed -e "s|{YOUR_GOOGLE_MAP_KEY_ANDROID_HERE}|$GOOGLE_MAP_KEY_ANDROID|" \
-              -e "s|{YOUR_GOOGLE_MAP_KEY_IOS_HERE}|$GOOGLE_MAP_KEY_IOS|" \
-              mobile/.env.sample > mobile/.env.local
-
       - name: Set up Ruby (from .ruby-version)
         uses: ruby/setup-ruby@v1
         with:
