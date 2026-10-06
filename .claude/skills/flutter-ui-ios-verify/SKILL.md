@@ -1,11 +1,11 @@
 ---
 name: flutter-ui-ios-verify
-description: ローカル開発環境でiOSシミュレータ上のicecream_log(mobile/)を起動し、idb（タップ・要素ツリー取得）とxcrun simctl（スクリーンショット）でUI実装の妥当性を検証する。「iOSで動作確認して」「シミュレータで見た目を確認して」「iOSでワイヤーフレーム通りか確認して」等、iOS/シミュレータ/idbへの言及がある依頼で使う。Androidエミュレータで検証する場合は`flutter-ui-android-verify`、GitHub Actions CI上では`flutter-ui-android-verify-ci`を使う。
+description: ローカル開発環境でiOSシミュレータ上のworkout_timerを起動し、idb（タップ・要素ツリー取得）とxcrun simctl（スクリーンショット）でUI実装の妥当性を検証する。「iOSで動作確認して」「シミュレータで見た目を確認して」「iOSでワイヤーフレーム通りか確認して」等、iOS/シミュレータ/idbへの言及がある依頼で使う。Androidエミュレータで検証する場合は`flutter-ui-android-verify`、GitHub Actions CI上では`flutter-ui-android-verify-ci`を使う。
 ---
 
-# Flutter UI検証（icecream_log / iOSシミュレータ・ローカル環境向け）
+# Flutter UI検証（workout_timer / iOSシミュレータ・ローカル環境向け）
 
-`mobile/`配下のFlutterアプリをiOSシミュレータ上で検証する手順。`flutter-ui-android-verify`（Androidエミュレータ版）のiOS版で、評価の進め方（画面の評価とui-checkerによるループ）は両者で共通なのでAndroid版スキルを参照する。
+FlutterアプリをiOSシミュレータ上で検証する手順。`flutter-ui-android-verify`（Androidエミュレータ版）のiOS版で、評価の進め方（画面の評価とui-checkerによるループ）は両者で共通なのでAndroid版スキルを参照する。
 
 シミュレータの起動・idb接続・アプリのビルド起動・スクリーンショット撮影・要素取得とタップ・ヒットターゲットのデバッグ・座標系の注意点・環境要因の落とし穴は、このスキルではなく`flutter-ios-operate`スキル（`.claude/skills/flutter-ios-operate/SKILL.md`）を使う。このスキルは、その操作結果を「評価」してループを回す部分だけを扱う（重複して定義しない）。
 
@@ -13,7 +13,7 @@ description: ローカル開発環境でiOSシミュレータ上のicecream_log(
 
 - iOSシミュレータで検証する（Androidエミュレータの場合は`flutter-ui-android-verify`スキルを使う）。
 - アプリの起動・操作は`flutter-ios-operate`skillに従う。`simctl`/`idb`がBashツールのサンドボックス内で動かない点（`dangerouslyDisableSandbox: true`が必要）も同skill側を参照。
-- スクリーンショットの保存先は`flutter-ios-operate`skillの指示（`work/screenshots/<module>/`）に従う。
+- スクリーンショットの保存先は`flutter-ios-operate`skillの指示（`work/screenshots/`）に従う。
 
 ## 画面の評価とui-checkerによるループ
 
@@ -31,4 +31,4 @@ description: ローカル開発環境でiOSシミュレータ上のicecream_log(
 
 - 依頼文に「Figma」「ワイヤーフレーム」「デザイン通り」等の言及がある場合のみFigma MCPでリファレンスを取得して比較する（7-A）。言及が無ければFigmaは呼ばず、依頼文で示された期待に対する構造分析を行う（7-B）。
 - いずれの場合も7-Cで`ui-checker`agentを呼び出し、「画面構成 / 要素の有無 / 配置・順序 / テキスト・ラベル内容 / 状態表現」の5観点の判定・総合判定に加えて`fatal`/`fatal_reason`を得る（`ui-checker`は`pass`/`retry`という値自体は返さない）。`fatal: true`なら直ちに中断して人間にエスカレーションする。`fatal: false`の場合は、`criteria`にmismatchが1件でもあればコードを修正して`flutter-ios-operate`skillの2節「アプリをビルド・起動する」からやり直し（最大10回）、無ければ正常終了する。
-- 結果は`work/screenshots/mobile/<name>-compare.md`と`<name>-compare.json`の両方に保存する。
+- 結果は`work/screenshots/<name>-compare.md`と`<name>-compare.json`の両方に保存する。

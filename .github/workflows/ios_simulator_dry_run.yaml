@@ -27,15 +27,15 @@ jobs:
           ruby-version-file: .ruby-version
           bundler-cache: true
 
-      # ダウンロードキャッシュ(~/Library/Caches/CocoaPods)だけでなく、展開済みのmobile/ios/Podsも
+      # ダウンロードキャッシュ(~/Library/Caches/CocoaPods)だけでなく、展開済みのios/Podsも
       # キャッシュしてpod installを短縮する（Podsはgitignore対象で未追跡）。
       - name: CocoaPods cache
         uses: actions/cache@v6
         with:
           path: |
             ~/Library/Caches/CocoaPods
-            mobile/ios/Pods
-          key: cocoapods-${{ runner.os }}-${{ hashFiles('mobile/ios/Podfile.lock') }}
+            ios/Pods
+          key: cocoapods-${{ runner.os }}-${{ hashFiles('ios/Podfile.lock') }}
           restore-keys: |
             cocoapods-${{ runner.os }}-
 
@@ -43,7 +43,7 @@ jobs:
         uses: actions/cache@v6
         with:
           path: ~/.pub-cache
-          key: pub-cache-${{ runner.os }}-${{ hashFiles('mobile/pubspec.lock') }}
+          key: pub-cache-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
           restore-keys: |
             pub-cache-${{ runner.os }}-
 
@@ -58,20 +58,19 @@ jobs:
       - name: Dart build_runner cache
         uses: actions/cache@v6
         with:
-          path: mobile/.dart_tool
-          key: dart-tool-${{ runner.os }}-${{ steps.flutter_setup.outputs.FLUTTER_VERSION }}-${{ hashFiles('mobile/pubspec.lock') }}
+          path: .dart_tool
+          key: dart-tool-${{ runner.os }}-${{ steps.flutter_setup.outputs.FLUTTER_VERSION }}-${{ hashFiles('pubspec.lock') }}
           restore-keys: |
             dart-tool-${{ runner.os }}-${{ steps.flutter_setup.outputs.FLUTTER_VERSION }}-
 
       - name: Install Flutter dependencies and generate code
-        working-directory: mobile
         run: |
           flutter pub get
           dart run build_runner build --delete-conflicting-outputs
 
       # PodfileはFlutter/Generated.xcconfigの存在を要求するため、必ずflutter pub getの後に実行する。
       - name: Install CocoaPods dependencies
-        working-directory: mobile/ios
+        working-directory: ios
         run: |
           pod --version
           bundle exec pod install
@@ -125,7 +124,6 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Flutter devices
-        working-directory: mobile
         run: |
           flutter devices
           # ランナー上の全シミュレータが数十行出るだけで、検証には使っていないので止めている。
@@ -134,7 +132,6 @@ jobs:
 
       # Androidと同じテストを同じ形で実行する。シミュレータ向けビルドなので署名は不要。
       - name: Run integration test on iOS simulator
-        working-directory: mobile
         run: flutter test integration_test/app_test.dart -d "$SIMULATOR_UDID"
 
       # シミュレータ起動前に落ちた場合はUDIDが無いので撮らない（無駄な赤いステップを増やさない）。

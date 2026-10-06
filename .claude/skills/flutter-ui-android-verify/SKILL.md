@@ -1,18 +1,18 @@
 ---
 name: flutter-ui-android-verify
-description: ローカル開発環境でAndroidエミュレータ上のicecream_log(mobile/)を実機起動し、adbでのタップ操作・スクリーンショット取得・Figmaワイヤーフレームとのチェックリストに基づく構造的比較（VLMによる一致度判定）によってUI実装の妥当性を検証する。「動作確認して」「ワイヤーフレーム通りか確認して」「実機で見た目を確認して」「Figmaとどれくらい近づいたか教えて」等の依頼で使う。依頼にiOS/シミュレータ/idbへの言及がある場合は代わりに`flutter-ui-ios-verify`スキルを、GitHub Actions CI上で実行している場合は`flutter-ui-android-verify-ci`スキルを使うこと（いずれもアプリの起動方法・操作コマンドが異なる）。
+description: ローカル開発環境でAndroidエミュレータ上のworkout_timerを実機起動し、adbでのタップ操作・スクリーンショット取得・Figmaワイヤーフレームとのチェックリストに基づく構造的比較（VLMによる一致度判定）によってUI実装の妥当性を検証する。「動作確認して」「ワイヤーフレーム通りか確認して」「実機で見た目を確認して」「Figmaとどれくらい近づいたか教えて」等の依頼で使う。依頼にiOS/シミュレータ/idbへの言及がある場合は代わりに`flutter-ui-ios-verify`スキルを、GitHub Actions CI上で実行している場合は`flutter-ui-android-verify-ci`スキルを使うこと（いずれもアプリの起動方法・操作コマンドが異なる）。
 ---
 
-# Flutter UI検証（icecream_log / Androidエミュレータ・ローカル環境向け）
+# Flutter UI検証（workout_timer / Androidエミュレータ・ローカル環境向け）
 
-`mobile/`配下のFlutterアプリを実機（Androidエミュレータ）で起動し、adb操作とスクリーンショットで実装の見た目・挙動を検証する手順。design.mdの「Figmaワイヤーフレームとの対応関係」表にある各画面を、実装後に実際にレンダリングして確認する用途を想定している。**ローカル開発環境向け**で、`fvm`経由（`fvm flutter`/`fvm dart`）での実行を前提にしている。GitHub Actions CI上で`[ui-verify]`から呼ばれた場合は、このスキルではなく`flutter-ui-android-verify-ci`スキルを使うこと（アプリのビルド・起動方法だけが異なり、以下の内容は共通）。
+Flutterアプリを実機（Androidエミュレータ）で起動し、adb操作とスクリーンショットで実装の見た目・挙動を検証する手順。design.mdの「Figmaワイヤーフレームとの対応関係」表にある各画面を、実装後に実際にレンダリングして確認する用途を想定している。**ローカル開発環境向け**で、`fvm`経由（`fvm flutter`/`fvm dart`）での実行を前提にしている。GitHub Actions CI上で`[ui-verify]`から呼ばれた場合は、このスキルではなく`flutter-ui-android-verify-ci`スキルを使うこと（アプリのビルド・起動方法だけが異なり、以下の内容は共通）。
 
 エミュレータの起動・アプリのビルド起動・スクリーンショット撮影・タップ操作・ヒットターゲットのデバッグ・環境要因の落とし穴は、このスキルではなく`flutter-android-operate`スキル（`.claude/skills/flutter-android-operate/SKILL.md`）を使う。このスキルは、その操作結果を「評価」してループを回す部分だけを扱う（重複して定義しない）。
 
 ## 前提
 
 - Androidエミュレータで検証する（iOSシミュレータの場合は`flutter-ui-ios-verify`スキルを使う）。
-- スクリーンショットの保存先は`flutter-android-operate`skillの指示（`work/screenshots/<module>/`）に従う。
+- スクリーンショットの保存先は`flutter-android-operate`skillの指示（`work/screenshots/`）に従う。
 
 ## 画面の評価とui-checkerによるループ
 
@@ -39,7 +39,7 @@ Figma MCPはプロジェクトルート直下の[.mcp.json](../../../.mcp.json)�
    ```
 
    これは「要素の有無」「配置・順序」を画像の目視だけに頼らず、要素名・座標という客観的な情報で裏付けるために使う（XMLではなくYAML形式である点に注意。`mobile-screen-vision-compare`スキルの比較は構造化データであれば形式差を許容する）。
-4. `flutter-android-operate`skillの3節の手順で実機の現状スクリーンショットを`work/screenshots/<module>/<name>-app.png`として保存する（＝「現状」）。あわせて同skill4節の`uiautomator dump`でアプリ側の構造（text/content-desc/bounds）も取得しておくと、Figmaの`get_figma_data`と直接突き合わせられる。
+4. `flutter-android-operate`skillの3節の手順で実機の現状スクリーンショットを`work/screenshots/<name>-app.png`として保存する（＝「現状」）。あわせて同skill4節の`uiautomator dump`でアプリ側の構造（text/content-desc/bounds）も取得しておくと、Figmaの`get_figma_data`と直接突き合わせられる。
 5. 画像パス（`<name>-figma.png`/`<name>-app.png`）とメタデータが揃ったら7-Cに進み、`ui-checker`に渡して判定させる。「比較対象」はFigmaのリファレンス（画像・`get_figma_data`）であることを7-Cの呼び出しで明示する。
 
 ### 7-B. Figmaに言及が無い場合: 単純な構造分析の材料を用意する
@@ -48,7 +48,7 @@ Figmaは呼び出さず、実機のスクリーンショットと`uiautomator du
 
 #### 手順
 
-1. `flutter-android-operate`skillの3節の手順で実機のスクリーンショットを`work/screenshots/<module>/<name>-app.png`として保存する。
+1. `flutter-android-operate`skillの3節の手順で実機のスクリーンショットを`work/screenshots/<name>-app.png`として保存する。
 2. 同skill4節の`uiautomator dump`でアプリの構造（text/content-desc/bounds）を取得する。
 3. 画像パスと構造情報が揃ったら7-Cに進み、`ui-checker`に渡して判定させる。「比較対象」はFigmaではなく依頼文で示された期待であることを7-Cの呼び出しで明示する。
 
@@ -67,4 +67,4 @@ Figmaは呼び出さず、実機のスクリーンショットと`uiautomator du
 
 ### 評価結果の保存（Markdown + JSON）
 
-保存の手順・フォーマット（Markdown/JSONの形式、`loop_verdict`の3値等）は`flutter-ui-android-verify`/`flutter-ui-android-verify-ci`/`flutter-ui-ios-verify`/`flutter-ui-ios-verify-ci`の4スキル共通なので`flutter-ui-verify-result-save`スキル（`.claude/skills/flutter-ui-verify-result-save/SKILL.md`）を使う（重複して定義しない）。保存先ディレクトリは`flutter-android-operate`skillの指示（`work/screenshots/<module>/`）に従う。上限到達（`loop_verdict: retry_limit_reached`）または`fatal`（`loop_verdict: fatal`）でループを終えた場合も、その時点までに判明していた`criteria`を同様に保存する。
+保存の手順・フォーマット（Markdown/JSONの形式、`loop_verdict`の3値等）は`flutter-ui-android-verify`/`flutter-ui-android-verify-ci`/`flutter-ui-ios-verify`/`flutter-ui-ios-verify-ci`の4スキル共通なので`flutter-ui-verify-result-save`スキル（`.claude/skills/flutter-ui-verify-result-save/SKILL.md`）を使う（重複して定義しない）。保存先ディレクトリは`flutter-android-operate`skillの指示（`work/screenshots/`）に従う。上限到達（`loop_verdict: retry_limit_reached`）または`fatal`（`loop_verdict: fatal`）でループを終えた場合も、その時点までに判明していた`criteria`を同様に保存する。

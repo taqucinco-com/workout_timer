@@ -61,8 +61,8 @@ jobs:
         with:
           path: |
             ~/Library/Caches/CocoaPods
-            mobile/ios/Pods
-          key: cocoapods-${{ runner.os }}-${{ hashFiles('mobile/ios/Podfile.lock') }}
+            ios/Pods
+          key: cocoapods-${{ runner.os }}-${{ hashFiles('ios/Podfile.lock') }}
           restore-keys: |
             cocoapods-${{ runner.os }}-
 
@@ -70,7 +70,7 @@ jobs:
         uses: actions/cache@v6
         with:
           path: ~/.pub-cache
-          key: pub-cache-${{ runner.os }}-${{ hashFiles('mobile/pubspec.lock') }}
+          key: pub-cache-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
           restore-keys: |
             pub-cache-${{ runner.os }}-
 
@@ -85,22 +85,21 @@ jobs:
       - name: Dart build_runner cache
         uses: actions/cache@v6
         with:
-          path: mobile/.dart_tool
-          key: dart-tool-${{ runner.os }}-${{ steps.flutter_setup.outputs.FLUTTER_VERSION }}-${{ hashFiles('mobile/pubspec.lock') }}
+          path: .dart_tool
+          key: dart-tool-${{ runner.os }}-${{ steps.flutter_setup.outputs.FLUTTER_VERSION }}-${{ hashFiles('pubspec.lock') }}
           restore-keys: |
             dart-tool-${{ runner.os }}-${{ steps.flutter_setup.outputs.FLUTTER_VERSION }}-
 
       - name: Install Flutter dependencies and generate code
-        working-directory: mobile
         run: |
           flutter pub get
           dart run build_runner build --delete-conflicting-outputs
 
       - name: Discard codegen changes to tracked files
-        run: git checkout -- mobile/
+        run: git checkout -- .
 
       - name: Install CocoaPods dependencies
-        working-directory: mobile/ios
+        working-directory: ios
         run: |
           pod --version
           bundle exec pod install
@@ -189,8 +188,6 @@ jobs:
           claude_args: >-
             --mcp-config .mcp.json
             --allowedTools "Agent,
-            Bash(cd mobile && dart:*),
-            Bash(cd mobile && flutter:*),
             Bash(dart:*),
             Bash(echo:*),
             Bash(flutter:*),

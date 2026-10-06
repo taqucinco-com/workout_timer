@@ -1,16 +1,16 @@
 ---
 name: flutter-android-operate
-description: ローカル開発環境でAndroidエミュレータ上のicecream_log(mobile/)を実機起動し、adbでのタップ操作・スクリーンショット取得を行う共通手順。UI検証のmaker/checker等、Androidエミュレータの操作が必要な複数のスキル・agentから共通で参照される。CI環境では代わりに`flutter-android-operate-ci`を使う。
+description: ローカル開発環境でAndroidエミュレータ上のworkout_timerを実機起動し、adbでのタップ操作・スクリーンショット取得を行う共通手順。UI検証のmaker/checker等、Androidエミュレータの操作が必要な複数のスキル・agentから共通で参照される。CI環境では代わりに`flutter-android-operate-ci`を使う。
 ---
 
-# Flutter Android操作（icecream_log / エミュレータ・ローカル環境向け）
+# Flutter Android操作（workout_timer / エミュレータ・ローカル環境向け）
 
-`mobile/`配下のFlutterアプリを実機（Androidエミュレータ）で起動し、adb操作とスクリーンショットで実装の見た目・挙動を確認するための共通手順。**アプリを起動して操作する方法だけを扱い、その結果（スクリーンショットや構造情報）をどう評価するかはこのスキルの範囲外**（呼び出し元のスキル・agentが行う）。**ローカル開発環境向け**で、`fvm`経由（`fvm flutter`/`fvm dart`）での実行を前提にしている。GitHub Actions CI上では`fvm`が無い等の理由でアプリの起動方法が異なるため、このスキルではなく`flutter-android-operate-ci`を使うこと（3節以降の操作手順は共通）。
+Flutterアプリを実機（Androidエミュレータ）で起動し、adb操作とスクリーンショットで実装の見た目・挙動を確認するための共通手順。**アプリを起動して操作する方法だけを扱い、その結果（スクリーンショットや構造情報）をどう評価するかはこのスキルの範囲外**（呼び出し元のスキル・agentが行う）。**ローカル開発環境向け**で、`fvm`経由（`fvm flutter`/`fvm dart`）での実行を前提にしている。GitHub Actions CI上では`fvm`が無い等の理由でアプリの起動方法が異なるため、このスキルではなく`flutter-android-operate-ci`を使うこと（3節以降の操作手順は共通）。
 
 ## 0. 前提
 
 - Androidエミュレータを使う（iOSシミュレータの場合は`flutter-ios-operate`を使う）。起動コマンドは `$ANDROID_HOME/emulator/emulator -avd Medium_Phone_API_35`など。Android Emulatorは起動すると `flutter devices` で `emulator-5554` として認識される。
-- スクリーンショットは必ず `work/screenshots/<module>/`（例: `mobile/`）配下に保存する。`mobile/`直下やリポジトリ直下には置かない（`.gitignore`で`/work/`配下がまるごと除外されている）。
+- スクリーンショットは必ず `work/screenshots/`配下に保存する。リポジトリ直下には置かない（`.gitignore`で`/work/`配下がまるごと除外されている）。
 
 ## 1. エミュレータを起動する
 
@@ -30,7 +30,6 @@ until adb devices | grep -q "emulator-5554.*device$"; do sleep 2; done
 ## 2. アプリをビルド・起動する
 
 ```bash
-cd mobile
 nohup fvm flutter run -d emulator-5554 > /tmp/flutter_run.log 2>&1 &
 disown
 ```
@@ -46,11 +45,9 @@ until grep -qE "A Dart VM Service|Lost connection|Error|Exception|Gradle build f
 ## 3. スクリーンショットを撮る
 
 ```bash
-mkdir -p work/screenshots/mobile
-adb -s emulator-5554 exec-out screencap -p > work/screenshots/mobile/<name>.png
+mkdir -p work/screenshots
+adb -s emulator-5554 exec-out screencap -p > work/screenshots/<name>.png
 ```
-
-`cd mobile`した状態のままだと相対パスが`mobile/work/screenshots/`に書き込まれてしまう。リポジトリ直下からの絶対パスで書くか、事前に`cd`で戻ってから実行すること。
 
 撮った画像は Read ツールで開いて目視確認する。
 
@@ -65,7 +62,7 @@ grep -o 'text="対象テキスト"[^/]*bounds="\[[0-9,]*\]\[[0-9,]*\]"' work/wd.
 # または content-desc="..." で検索（SemanticsLabelが無いWidgetはtext/content-descで拾えないことがある）
 ```
 
-保存先は作業ディレクトリ配下の`work/wd.xml`にすること（`.gitignore`で`/work/`配下は除外済み）。Bashツールのサンドボックスは作業ディレクトリとセッション専用`$TMPDIR`にのみ書き込みを許可する仕様のため、裸の`/tmp`直下は対象外（詳細は[`/sandbox`ドキュメント](https://code.claude.com/docs/en/sandboxing)の「Temporary directories」参照）。`cd mobile`した状態のままだと相対パスが`mobile/work/wd.xml`に書き込まれてしまう点は3節のスクリーンショット保存と同様に注意すること。
+保存先は作業ディレクトリ配下の`work/wd.xml`にすること（`.gitignore`で`/work/`配下は除外済み）。Bashツールのサンドボックスは作業ディレクトリとセッション専用`$TMPDIR`にのみ書き込みを許可する仕様のため、裸の`/tmp`直下は対象外（詳細は[`/sandbox`ドキュメント](https://code.claude.com/docs/en/sandboxing)の「Temporary directories」参照）。
 
 `bounds="[x1,y1][x2,y2]"`はデバイスの実ピクセル座標そのもの（スケーリング不要）。中心 `((x1+x2)/2, (y1+y2)/2)` をそのまま`adb shell input tap`に渡す。
 

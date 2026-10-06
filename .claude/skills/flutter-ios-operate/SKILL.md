@@ -1,11 +1,11 @@
 ---
 name: flutter-ios-operate
-description: ローカル開発環境でiOSシミュレータ上のicecream_log(mobile/)を起動し、idb（タップ・要素ツリー取得）とxcrun simctl（スクリーンショット）で操作を行う共通手順。UI検証のmaker/checker等、iOSシミュレータの操作が必要な複数のスキル・agentから共通で参照される。CI環境では代わりに`flutter-ios-operate-ci`を使う。
+description: ローカル開発環境でiOSシミュレータ上のworkout_timerを起動し、idb（タップ・要素ツリー取得）とxcrun simctl（スクリーンショット）で操作を行う共通手順。UI検証のmaker/checker等、iOSシミュレータの操作が必要な複数のスキル・agentから共通で参照される。CI環境では代わりに`flutter-ios-operate-ci`を使う。
 ---
 
-# Flutter iOS操作（icecream_log / シミュレータ・ローカル環境向け）
+# Flutter iOS操作（workout_timer / シミュレータ・ローカル環境向け）
 
-`mobile/`配下のFlutterアプリをiOSシミュレータで起動し、`idb`と`xcrun simctl`で操作するための共通手順。`flutter-android-operate`（Androidエミュレータ版）のiOS版で、**操作ツールが`adb`から`idb`/`simctl`に変わる点だけが異なる**。**アプリを起動して操作する方法だけを扱い、その結果（スクリーンショットや構造情報）をどう評価するかはこのスキルの範囲外**（呼び出し元のスキル・agentが行う）。
+FlutterアプリをiOSシミュレータで起動し、`idb`と`xcrun simctl`で操作するための共通手順。`flutter-android-operate`（Androidエミュレータ版）のiOS版で、**操作ツールが`adb`から`idb`/`simctl`に変わる点だけが異なる**。**アプリを起動して操作する方法だけを扱い、その結果（スクリーンショットや構造情報）をどう評価するかはこのスキルの範囲外**（呼び出し元のスキル・agentが行う）。
 
 ローカル開発環境向けで、`fvm`経由（`fvm flutter`）での実行を前提にしている。
 
@@ -22,7 +22,7 @@ description: ローカル開発環境でiOSシミュレータ上のicecream_log(
   PermissionError: [Errno 1] Operation not permitted: '/tmp/idb/state.lock'
   ```
 
-- スクリーンショットは必ず `work/screenshots/<module>/`（例: `mobile/`）配下に保存する。`mobile/`直下やリポジトリ直下には置かない（`.gitignore`で`/work/`配下がまるごと除外されている）。
+- スクリーンショットは必ず `work/screenshots/`配下に保存する。リポジトリ直下には置かない（`.gitignore`で`/work/`配下がまるごと除外されている）。
 
 ## 1. シミュレータを起動し、idbを接続する
 
@@ -52,7 +52,6 @@ idb connect <UDID>
 ## 2. アプリをビルド・起動する
 
 ```bash
-cd mobile
 nohup fvm flutter run -d <UDID> > /tmp/flutter_run_ios.log 2>&1 &
 disown
 ```
@@ -63,7 +62,7 @@ disown
 - 初回やPods更新後は、CONTRIBUTING.md記載の事前ビルドが必要になることがある。
 
   ```bash
-  cd mobile && fvm flutter build ios
+  fvm flutter build ios
   ```
 
 起動完了待ちは`run_in_background`付きBashで行い、完了通知を待つ（sleepループを直接待たない）:
@@ -77,11 +76,9 @@ until grep -qE "A Dart VM Service|Lost connection|Error|Exception|Xcode build do
 ## 3. スクリーンショットを撮る
 
 ```bash
-mkdir -p work/screenshots/mobile
-xcrun simctl io <UDID> screenshot work/screenshots/mobile/<name>.png
+mkdir -p work/screenshots
+xcrun simctl io <UDID> screenshot work/screenshots/<name>.png
 ```
-
-`cd mobile`した状態のままだと相対パスが`mobile/work/screenshots/`に書き込まれてしまう。リポジトリ直下からの絶対パスで書くか、事前に`cd`で戻ってから実行すること。
 
 `xcrun simctl screenshot <path>`という短縮形は**存在しないサブコマンド**で、usageが表示されるだけなので使わない（`io <UDID> screenshot`が正）。
 
@@ -162,5 +159,5 @@ GestureDetector(
 - **`simctl`/`idb`のサンドボックスエラー**: 0節の通り`dangerouslyDisableSandbox: true`が必要。接続エラーを見たら、まずシミュレータの異常ではなくこれを疑う。
 - **`idb connect`の切れ**: シミュレータ再起動やマシンのスリープ後に`No Companion Connected`になる。`idb connect <UDID>`で再接続する。
 - **物理iPhoneへの誤デプロイ**: 2節の通り`-d <UDID>`を省略しない。
-- **シミュレータの状態汚れ**: `xcrun simctl erase <UDID>`で初期化できる（起動中なら`shutdown`してから）。アプリだけ入れ直したい場合は`xcrun simctl uninstall <UDID> com.taqucinco.softicecreamnotes.icecreamLog`。
-- **ビルドが通らない**: iOSはPods起因の失敗が多い。`cd mobile/ios && pod install`、それでも駄目なら`fvm flutter clean`を試す。
+- **シミュレータの状態汚れ**: `xcrun simctl erase <UDID>`で初期化できる（起動中なら`shutdown`してから）。アプリだけ入れ直したい場合は`xcrun simctl uninstall <UDID> com.taqucinco.workoutTimer`。
+- **ビルドが通らない**: iOSはPods起因の失敗が多い。`cd ios && pod install`、それでも駄目なら`fvm flutter clean`を試す。

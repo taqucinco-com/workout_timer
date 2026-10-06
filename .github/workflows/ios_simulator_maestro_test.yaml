@@ -33,8 +33,8 @@ jobs:
         with:
           path: |
             ~/Library/Caches/CocoaPods
-            mobile/ios/Pods
-          key: cocoapods-${{ runner.os }}-${{ hashFiles('mobile/ios/Podfile.lock') }}
+            ios/Pods
+          key: cocoapods-${{ runner.os }}-${{ hashFiles('ios/Podfile.lock') }}
           restore-keys: |
             cocoapods-${{ runner.os }}-
 
@@ -42,7 +42,7 @@ jobs:
         uses: actions/cache@v6
         with:
           path: ~/.pub-cache
-          key: pub-cache-${{ runner.os }}-${{ hashFiles('mobile/pubspec.lock') }}
+          key: pub-cache-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
           restore-keys: |
             pub-cache-${{ runner.os }}-
 
@@ -57,20 +57,19 @@ jobs:
       - name: Dart build_runner cache
         uses: actions/cache@v6
         with:
-          path: mobile/.dart_tool
-          key: dart-tool-${{ runner.os }}-${{ steps.flutter_setup.outputs.FLUTTER_VERSION }}-${{ hashFiles('mobile/pubspec.lock') }}
+          path: .dart_tool
+          key: dart-tool-${{ runner.os }}-${{ steps.flutter_setup.outputs.FLUTTER_VERSION }}-${{ hashFiles('pubspec.lock') }}
           restore-keys: |
             dart-tool-${{ runner.os }}-${{ steps.flutter_setup.outputs.FLUTTER_VERSION }}-
 
       - name: Install Flutter dependencies and generate code
-        working-directory: mobile
         run: |
           flutter pub get
           dart run build_runner build --delete-conflicting-outputs
 
       # PodfileはFlutter/Generated.xcconfigの存在を要求するため、必ずflutter pub getの後に実行する。
       - name: Install CocoaPods dependencies
-        working-directory: mobile/ios
+        working-directory: ios
         run: |
           pod --version
           bundle exec pod install
@@ -79,7 +78,6 @@ jobs:
       # ここでシミュレータ向けにビルドしておく。--simulatorはビルドモードのデフォルトが
       # debugになり、署名も不要。
       - name: Build app for simulator
-        working-directory: mobile
         run: |
           flutter build ios --simulator
           ls -d build/ios/iphonesimulator/Runner.app
@@ -88,7 +86,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: ios-simulator-app
-          path: mobile/build/ios/iphonesimulator/Runner.app
+          path: build/ios/iphonesimulator/Runner.app
           retention-days: 1
 
   run-maestro:
@@ -114,7 +112,7 @@ jobs:
         uses: actions/download-artifact@v7
         with:
           name: ios-simulator-app
-          path: mobile/build/ios/iphonesimulator/Runner.app
+          path: build/ios/iphonesimulator/Runner.app
 
       # ランナーイメージの更新でXcode/ランタイムのバージョンは変わるため、固定値ではなく
       # 利用可能なものから選ぶ。デバイスは"iPhone 16"があればそれを、無ければ任意のiPhoneを使う。
@@ -171,13 +169,12 @@ jobs:
 
       # フロー先頭のappIdと一致していないとMaestroが起動できないので、ここで突き合わせる。
       - name: Install app on simulator
-        working-directory: mobile
         run: |
           APP=build/ios/iphonesimulator/Runner.app
           xcrun simctl install "$SIMULATOR_UDID" "$APP"
 
           BUNDLE_ID=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$APP/Info.plist")
-          FLOW_APP_ID=com.taqucinco.softicecreamnotes.icecreamLog
+          FLOW_APP_ID=com.taqucinco.workoutTimer
           echo "インストールしたbundle id: $BUNDLE_ID"
           echo "フローのappId            : $FLOW_APP_ID"
           if [ "$BUNDLE_ID" != "$FLOW_APP_ID" ]; then
@@ -221,7 +218,7 @@ jobs:
       - name: Run maestro flow
         run: |
           mkdir -p "$ARTIFACT_DIR"
-          maestro test mobile/test/e2e/maestro/ios/ \
+          maestro test test/e2e/maestro/ios/ \
             --udid "$SIMULATOR_UDID" \
             --debug-output "$ARTIFACT_DIR/debug" \
             --flatten-debug-output \
