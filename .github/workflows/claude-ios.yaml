@@ -163,8 +163,6 @@ jobs:
 
           allowed_bots: "github-actions,claude"
 
-          track_progress: true
-
           additional_permissions: |
             actions: read
 
