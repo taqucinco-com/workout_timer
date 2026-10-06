@@ -28,6 +28,7 @@ agentは以下の形式で応答する。
 
 - `target_type`/`target_number`: 最初のプロンプトに「対象種別: pr/issue」「対象番号: ...」として直接渡されているので、それをそのまま使う（推測やコマンドでの再取得は不要）
 - `head_ref`: 検証対象のブランチ名。**PRコメント/PRレビュー由来の依頼の場合、`claude.yml`の`actions/checkout`は既定でベースブランチをチェックアウトしており、`git branch --show-current`はPRのhead refと一致しないことがある。** 必ず`gh pr view <PR番号> --json headRefName -q .headRefName`で取得すること（`--allowedTools`に`Bash(gh pr view:*)`として許可済みの単独コマンド）。Issueコメント由来で、Claude自身がこの turn で新規ブランチを作成・pushした場合は、そのブランチ名（`git branch --show-current`の結果）をそのまま使ってよい
+- `head_ref`のブランチがリモートに存在すること: `claude-android.yaml`/`claude-ios.yaml`は`actions/checkout`で`head_ref`をfetchするため、未pushのブランチを渡すとcheckoutで失敗する。新規ブランチを作成した場合は、起動前に`git push`済みであることを`git fetch origin <head_ref>`（単独コマンド）で確認し、fetchに失敗したら先に`git push -u origin <head_ref>`を実行する
 - `original_request`: 依頼元のコメント本文。最初のプロンプトの「起動元コメント本文:」以下にそのまま渡されているので、それを使う
 - `judged_reason`: `android-pr-emu-need-checker`agentが返した理由をそのまま使う
 - `source_comment_url`: 起動元となった依頼コメント（またはIssue）のパーマリンク。この値は最初のプロンプト冒頭に「起動元コメントURL: ...」として直接渡されているので、それをそのまま使う。**`echo`/`printenv`/`env`等のBashコマンドで改めて取得しようとしないこと。** シェル変数展開（`$VAR`）を含むコマンドは、`Bash(echo:*)`等でコマンド自体が許可されていても「Contains simple_expansion」として承認待ちになり、非対話的なCI実行では失敗する（実際にIssue #68で発生した事故）。プロンプトに書かれている値を読んで使うだけでよい
@@ -43,11 +44,11 @@ agentは以下の形式で応答する。
 `workflow_dispatch`のinput文字列には長さの上限があるため、`original_request`（依頼元コメント本文）が数千文字を超えるような長大なものである場合は、そのまま全文を埋め込もうとせず、要点を数百字程度に要約してから渡すこと。要約してもなお長すぎる、あるいは要約では判断理由が失われてしまうと判断した場合は、無理に起動を試みず「依頼内容が長大なため`claude-android.yaml`への自動連携ができなかった」旨と要約を最終応答に含め、人間に手動でのworkflow_dispatch実行を促すこと。
 
 ```bash
-gh workflow run claude-android.yaml --ref develop -f target_type='pr' -f target_number='123' -f head_ref='feat/xxx' -f source_comment_url='https://github.com/OWNER/REPO/issues/42#issuecomment-123456789' -f original_request='依頼元のコメント本文をここに直接埋め込む。
+gh workflow run claude-android.yaml --ref main -f target_type='pr' -f target_number='123' -f head_ref='feat/xxx' -f source_comment_url='https://github.com/OWNER/REPO/issues/42#issuecomment-123456789' -f original_request='依頼元のコメント本文をここに直接埋め込む。
 複数行でもそのまま書ける。本文中にシングルクォートがあれば '\''のように置換する。' -f judged_reason='android-pr-emu-need-checkerが返した理由をここに直接埋め込む。'
 ```
 
-`--ref`は常に`develop`（デフォルトブランチ）を指定する。`claude-android.yaml`自体がまだ存在しないPRブランチからでも確実に起動するためで、実際に検証したいブランチは`head_ref`で別途渡す。`target_type`/`target_number`/`head_ref`/`source_comment_url`/`original_request`/`judged_reason`は実際の値に置き換えること。
+`--ref`は常に`main`（デフォルトブランチ）を指定する。`claude-android.yaml`自体がまだ存在しないPRブランチからでも確実に起動するためで、実際に検証したいブランチは`head_ref`で別途渡す。`target_type`/`target_number`/`head_ref`/`source_comment_url`/`original_request`/`judged_reason`は実際の値に置き換えること。
 
 ## 4. 起動結果を最終応答に含める
 

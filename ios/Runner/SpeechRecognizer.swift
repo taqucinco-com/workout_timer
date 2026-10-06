@@ -151,9 +151,22 @@ actor SpeechRecognizer: ObservableObject {
     private func reset() {
         task?.cancel()
         audioEngine?.stop()
+    audioEngine?.inputNode.removeTap(onBus: 0)
         audioEngine = nil
         request = nil
         task = nil
+    Self.restorePlaybackSession()
+  }
+
+  /// 録音終了後にオーディオセッションを再生用へ戻し、スピーカー出力の音量低下を防ぐ。
+  nonisolated private static func restorePlaybackSession() {
+    let audioSession = AVAudioSession.sharedInstance()
+    do {
+      try audioSession.setCategory(.playback, mode: .default, options: [])
+      try audioSession.setActive(true)
+        } catch {
+            print(error)
+        }
     }
     
     private static func prepareEngine() throws -> (AVAudioEngine, SFSpeechAudioBufferRecognitionRequest) {
@@ -162,9 +175,9 @@ actor SpeechRecognizer: ObservableObject {
         let request = SFSpeechAudioBufferRecognitionRequest()
 //        request.shouldReportPartialResults = false
         request.addsPunctuation = true
-        
-        let audioSession = AVAudioSession.sharedInstance()
-        try audioSession.setCategory(.playAndRecord, mode: .measurement, options: .duckOthers)
+
+    let audioSession = AVAudioSession.sharedInstance()
+    try audioSession.setCategory(.playAndRecord, mode: .default, options: [.duckOthers, .defaultToSpeaker])
         try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
         let inputNode = audioEngine.inputNode
         
@@ -183,8 +196,9 @@ actor SpeechRecognizer: ObservableObject {
         let receivedError = error != nil
         
         if receivedFinalResult || receivedError {
-            audioEngine.stop()
-            audioEngine.inputNode.removeTap(onBus: 0)
+      audioEngine.stop()
+      audioEngine.inputNode.removeTap(onBus: 0)
+            Self.restorePlaybackSession()
         }
         
         if let result {
