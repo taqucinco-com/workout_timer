@@ -2,13 +2,11 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:workout_timer/component/duration_led.dart';
 import 'package:workout_timer/feature/training/training.provider.dart';
 import 'package:workout_timer/feature/workout/workout_state_usecase.provider.dart';
 import 'package:workout_timer/framework/audio/audio_player_map.provider.dart';
-import 'package:workout_timer/framework/build_context_ext.dart';
 import 'package:workout_timer/page/home/component/home_side_menu.dart';
 
 class PausedScreen extends HookConsumerWidget {
@@ -22,17 +20,6 @@ class PausedScreen extends HookConsumerWidget {
     final isInterval = ref.watch(trainingProgressProvider.select((s) => s?.isInterval));
     final doneRound = ref.watch(trainingProgressProvider.select((s) => s?.doneRounds));
     final clickPlayer = ref.watch(audioPlayerMap.select((s) => s.getPlayers(.click)));
-
-    final timerAreaKey = useMemoized(() => GlobalKey(), []);
-    final timerAreaSize = useState(Size(0, 0));
-
-    void calcSize() {
-      final tuple = timerAreaKey.currentContext?.boundingRect();
-      if (tuple != null) {
-        final (_, size) = tuple;
-        timerAreaSize.value = size;
-      }
-    }
 
     void resume() {
       stateUseCase.resumeTraining();
@@ -65,32 +52,27 @@ class PausedScreen extends HookConsumerWidget {
                 ),
               ),
             ),
-            Builder(
-              builder: (context) {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (context.mounted) {
-                    calcSize();
-                  }
-                });
-                return Flexible(
-                  key: timerAreaKey,
-                  flex: 3,
-                  child: Stack(
+            Flexible(
+              flex: 3,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final timerAreaSize = constraints.biggest;
+                  return Stack(
                     children: [
                       SizedBox.expand(
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             SizedBox(width: 24),
-                            if (timerAreaSize.value.width > 0 && timerAreaSize.value.height > 0)
+                            if (timerAreaSize.width > 0 && timerAreaSize.height > 0)
                               DurationLed(
                                 duration: remainDuration ?? trainingMenu.trainingDuration,
                                 color: Colors.orange.shade700,
                                 segmentSize: Size(
-                                  min(96.0, timerAreaSize.value.width * 0.2),
-                                  min(164.0, timerAreaSize.value.height * 0.8),
+                                  min(96.0, timerAreaSize.width * 0.2),
+                                  min(164.0, timerAreaSize.height * 0.8),
                                 ),
-                                colonSize: Size(12, min(96.0, timerAreaSize.value.height * 0.8)),
+                                colonSize: Size(12, min(96.0, timerAreaSize.height * 0.8)),
                                 margin: 16.0,
                               ),
                             SizedBox(width: 24),
@@ -98,9 +80,9 @@ class PausedScreen extends HookConsumerWidget {
                         ),
                       ),
                     ],
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
           ],
         ),

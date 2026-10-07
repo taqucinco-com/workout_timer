@@ -52,7 +52,7 @@ class _EagerInitialization extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(lifeCycleListenerProvider.select((s) => null));
     ref.watch(audioPlayerMap.select((s) => null));
-    
+
     return child;
   }
 }

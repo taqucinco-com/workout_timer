@@ -34,7 +34,7 @@ class TrainingUseCaseImpl implements TrainingUseCase {
 
     return Duration(minutes: newMinutes, seconds: newSeconds);
   }
-  
+
   @override
   TrainingMenuProgress? update(TrainingMenu trainingMenu) {
     final current = _progressController.state;

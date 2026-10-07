@@ -13,10 +13,10 @@ class TrainingMenu {
   final int rounds;
 
   factory TrainingMenu.zero() => const TrainingMenu(
-        trainingDuration: Duration.zero,
-        intervalDuration: Duration.zero,
-        rounds: 0,
-      );
+    trainingDuration: Duration.zero,
+    intervalDuration: Duration.zero,
+    rounds: 0,
+  );
 
   TrainingMenu copyWith({
     Duration? trainingDuration,

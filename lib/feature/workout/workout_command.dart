@@ -10,10 +10,10 @@ sealed class WorkoutCommand {
 class TrainingDurationSet extends WorkoutCommand {
   final Duration duration;
   TrainingDurationSet(this.duration)
-      : assert(
-          duration.inSeconds >= 0 && duration.inMinutes <= 99,
-          'Training duration must be between 0 and 99 minutes.',
-        );
+    : assert(
+        duration.inSeconds >= 0 && duration.inMinutes <= 99,
+        'Training duration must be between 0 and 99 minutes.',
+      );
 
   @override
   String toString() => 'TrainingDurationSet(duration: $duration)';
@@ -23,10 +23,10 @@ class TrainingDurationSet extends WorkoutCommand {
 class IntervalDurationSet extends WorkoutCommand {
   final Duration duration;
   IntervalDurationSet(this.duration)
-      : assert(
-          duration.inSeconds >= 0 && duration.inMinutes <= 99,
-          'Interval duration must be between 0 and 99 minutes.',
-        );
+    : assert(
+        duration.inSeconds >= 0 && duration.inMinutes <= 99,
+        'Interval duration must be between 0 and 99 minutes.',
+      );
 
   @override
   String toString() => 'IntervalDurationSet(duration: $duration)';
@@ -35,8 +35,7 @@ class IntervalDurationSet extends WorkoutCommand {
 /// Command to set the number of rounds/sets.
 class RoundSet extends WorkoutCommand {
   final int count;
-  const RoundSet(this.count)
-      : assert(count > 0 && count <= 99, 'Round count must be between 1 and 99.');
+  const RoundSet(this.count) : assert(count > 0 && count <= 99, 'Round count must be between 1 and 99.');
 
   @override
   String toString() => 'RoundSet(count: $count)';

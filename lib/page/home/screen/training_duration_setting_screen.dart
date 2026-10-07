@@ -8,7 +8,6 @@ import 'package:workout_timer/feature/training/training.provider.dart';
 import 'package:workout_timer/feature/training/training_usecase.provider.dart';
 import 'package:workout_timer/feature/workout/workout_command.dart';
 import 'package:workout_timer/feature/workout/workout_state_usecase.provider.dart';
-import 'package:workout_timer/framework/build_context_ext.dart';
 import 'package:workout_timer/page/home/component/duration_buttons.dart';
 import 'package:workout_timer/page/home/component/home_side_menu.dart';
 
@@ -20,17 +19,7 @@ class TrainingDurationSettingScreen extends HookConsumerWidget {
     final trainingUseCase = ref.watch(trainingUseCaseProvider);
     final workoutStateUsecase = ref.watch(workoutStateUseCaseProvider);
 
-    final timerAreaKey = useMemoized(() => GlobalKey(), []);
-    final timerAreaSize = useState(Size(0, 0));
     final pendingDuration = useState(ref.read(pendingTrainingMenuProvider.select((s) => s.trainingDuration)));
-
-    void calcSize() {
-      final tuple = timerAreaKey.currentContext?.boundingRect();
-      if (tuple != null) {
-        final (_, size) = tuple;
-        timerAreaSize.value = size;
-      }
-    }
 
     void onTapDurationPlus(Duration duration) {
       final newDuration = trainingUseCase.addDuration(pendingDuration.value, duration);
@@ -61,33 +50,28 @@ class TrainingDurationSettingScreen extends HookConsumerWidget {
                 ),
               ),
             ),
-            Builder(
-              builder: (context) {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (context.mounted) {
-                    calcSize();
-                  }
-                });
-                return Flexible(
-                  key: timerAreaKey,
-                  flex: 3,
-                  child: Stack(
+            Flexible(
+              flex: 3,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final timerAreaSize = constraints.biggest;
+                  return Stack(
                     children: [
                       SizedBox.expand(
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             SizedBox(width: 24),
-                            if (timerAreaSize.value.width > 0 && timerAreaSize.value.height > 0)
+                            if (timerAreaSize.width > 0 && timerAreaSize.height > 0)
                               DurationLed(
                                 duration: pendingDuration.value,
                                 blinking: true,
                                 color: Colors.orange.shade700,
                                 segmentSize: Size(
-                                  min(96.0, timerAreaSize.value.width * 0.2),
-                                  min(164.0, timerAreaSize.value.height * 0.8),
+                                  min(96.0, timerAreaSize.width * 0.2),
+                                  min(164.0, timerAreaSize.height * 0.8),
                                 ),
-                                colonSize: Size(12, min(96.0, timerAreaSize.value.height * 0.8)),
+                                colonSize: Size(12, min(96.0, timerAreaSize.height * 0.8)),
                                 margin: 16.0,
                               ),
                             SizedBox(width: 24),
@@ -107,9 +91,9 @@ class TrainingDurationSettingScreen extends HookConsumerWidget {
                         ),
                       ),
                     ],
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
           ],
         ),

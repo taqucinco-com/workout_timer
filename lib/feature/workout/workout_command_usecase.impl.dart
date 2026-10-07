@@ -10,7 +10,6 @@ class WorkoutCommandUsecaseImpl implements WorkoutCommandUseCase {
   WorkoutCommandUsecaseImpl([MethodChannel? methodChannel])
     : _methodChannel = methodChannel ?? const MethodChannel('workout-timer.taqucinco.com/command');
 
-  
   @override
   Future<String?> analyzeCommand(String text) async {
     return await _methodChannel.invokeMethod<String>('analyzeCommand', text);
@@ -20,7 +19,6 @@ class WorkoutCommandUsecaseImpl implements WorkoutCommandUseCase {
   Future<List<WorkoutCommand>> convertCommand(String json) async {
     final List<dynamic> jsonList = jsonDecode(json);
     final schemas = jsonList.map((e) => CommandAnalyzerSchema.fromJson(e as Map<String, dynamic>)).toList();
-  
 
     final List<WorkoutCommand> commands = [];
     for (final schema in schemas) {
