@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:workout_timer/feature/workout/workout_state.provider.dart';
 
@@ -88,21 +89,24 @@ class HomeSideMenu extends HookConsumerWidget {
                   child: Center(
                     child: SizedBox(
                       width: .infinity,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.blue.shade900,
-                          borderRadius: BorderRadius.circular(8),
-                          shape: .rectangle,
-                        ),
-                        child: Column(
-                          children: [
-                            Icon(Icons.settings, color: Colors.orange.shade700, size: 40),
-                            Text(
-                              'Settings',
-                              textAlign: .center,
-                              style: TextStyle(color: Colors.orange.shade700, fontWeight: .bold, fontSize: 12),
-                            ),
-                          ],
+                      child: InkWell(
+                        onTap: () => context.push('/settings'),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.blue.shade900,
+                            borderRadius: BorderRadius.circular(8),
+                            shape: .rectangle,
+                          ),
+                          child: Column(
+                            children: [
+                              Icon(Icons.settings, color: Colors.orange.shade700, size: 40),
+                              Text(
+                                'Settings',
+                                textAlign: .center,
+                                style: TextStyle(color: Colors.orange.shade700, fontWeight: .bold, fontSize: 12),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
