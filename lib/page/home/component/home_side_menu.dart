@@ -89,14 +89,12 @@ class HomeSideMenu extends HookConsumerWidget {
                   child: Center(
                     child: SizedBox(
                       width: .infinity,
-                      child: InkWell(
-                        onTap: () => context.push('/settings'),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.blue.shade900,
-                            borderRadius: BorderRadius.circular(8),
-                            shape: .rectangle,
-                          ),
+                      child: Material(
+                        color: Colors.blue.shade900,
+                        borderRadius: BorderRadius.circular(8),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(8),
+                          onTap: () => context.push('/settings'),
                           child: Column(
                             children: [
                               Icon(Icons.settings, color: Colors.orange.shade700, size: 40),
