@@ -1,14 +1,17 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:workout_timer/feature/onboarding/mic_guide_store.provider.dart';
 import 'package:workout_timer/feature/recognizer/speech_recognizer.provider.dart';
 import 'package:workout_timer/feature/workout/workout_command_usecase.provider.dart';
 import 'package:workout_timer/feature/workout/workout_state.provider.dart';
 import 'package:workout_timer/feature/workout/workout_state_usecase.provider.dart';
 import 'package:workout_timer/framework/audio/audio_player_map.provider.dart';
+import 'package:workout_timer/page/home/component/mic_guide_dialog.dart';
 import 'package:workout_timer/page/home/screen/countdown_screen.dart';
 import 'package:workout_timer/page/home/screen/interval_time_setting_screen.dart';
 import 'package:workout_timer/page/home/screen/paused_screen.dart';
@@ -74,6 +77,14 @@ class HomePage extends HookConsumerWidget {
     }, []);
 
     Future<void> tapMicIcon() async {
+      final micGuideStore = ref.read(micGuideStoreProvider);
+      if (!await micGuideStore.hasShown()) {
+        // 初回は説明のみ表示し、録音（STT・ローカルLLM）は開始しない
+        await micGuideStore.markShown();
+        if (!context.mounted) return;
+        await showMicGuideDialog(context);
+        return;
+      }
       try {
         if (recording.data ?? false) {
           await recognizer.stop();
@@ -96,9 +107,18 @@ class HomePage extends HookConsumerWidget {
           .trainingCountdown => CountdownScreen(),
           .paused => PausedScreen(),
         },
-        floatingActionButton: IconButton(
-          onPressed: tapMicIcon,
-          icon: Icon(Icons.mic, color: recording.data ?? false ? animatedColor : Colors.grey, size: 60),
+        floatingActionButton: GestureDetector(
+          // デバッグビルド限定: マイクボタン長押しで初回説明の表示済みフラグを消す
+          onLongPress: kDebugMode
+              ? () async {
+                  await ref.read(micGuideStoreProvider).reset();
+                  debugPrint('[wt] mic guide flag cleared');
+                }
+              : null,
+          child: IconButton(
+            onPressed: tapMicIcon,
+            icon: Icon(Icons.mic, color: recording.data ?? false ? animatedColor : Colors.grey, size: 60),
+          ),
         ),
       ),
     );
