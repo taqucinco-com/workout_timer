@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -54,6 +52,7 @@ class IntervalTimeSettingScreen extends HookConsumerWidget {
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   final timerAreaSize = constraints.biggest;
+                  final (segmentSize, colonSize) = DurationLed.fit(timerAreaSize);
                   return Stack(
                     children: [
                       SizedBox.expand(
@@ -66,11 +65,8 @@ class IntervalTimeSettingScreen extends HookConsumerWidget {
                                 duration: pendingDuration.value,
                                 blinking: true,
                                 color: Colors.orange.shade700,
-                                segmentSize: Size(
-                                  min(96.0, timerAreaSize.width * 0.2),
-                                  min(164.0, timerAreaSize.height * 0.8),
-                                ),
-                                colonSize: Size(12, min(96.0, timerAreaSize.height * 0.8)),
+                                segmentSize: segmentSize,
+                                colonSize: colonSize,
                                 margin: 16.0,
                               ),
                             SizedBox(width: 24),

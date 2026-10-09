@@ -7,7 +7,9 @@
             "type": "dart",
             "program": "lib/main.dart",
             "flutterMode": "debug",
-            "args": []
+            "toolArgs": [
+                "--no-enable-impeller"
+            ]
         },
         {
             "name": "develop release mode",

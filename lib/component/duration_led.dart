@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -21,6 +23,25 @@ class DurationLed extends HookConsumerWidget {
     this.margin = 4.0,
     this.blinking = false,
   });
+
+  /// 表示領域[area]に収まる最大のセグメント・コロンサイズを求める。
+  ///
+  /// 横幅は「数字4桁 + コロン + 桁間のマージン4つ + 左右の余白」の合計が[area]の幅に収まるよう
+  /// 数字1桁の幅を逆算する。[maxSegmentSize]は大画面で巨大になりすぎないための上限。
+  static (Size segment, Size colon) fit(
+    Size area, {
+    double margin = 16.0,
+    double colonWidth = 12.0,
+    double sidePadding = 24.0,
+    Size maxSegmentSize = const Size(108, 164),
+    double maxColonHeight = 96,
+  }) {
+    final availableWidth = area.width - sidePadding * 2 - margin * 4 - colonWidth;
+    final segmentWidth = max(0.0, min(maxSegmentSize.width, availableWidth / 4));
+    final segmentHeight = min(maxSegmentSize.height, area.height * 0.8);
+    final colonHeight = min(maxColonHeight, area.height * 0.8);
+    return (Size(segmentWidth, segmentHeight), Size(colonWidth, colonHeight));
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
