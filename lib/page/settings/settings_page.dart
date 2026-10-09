@@ -27,7 +27,13 @@ class SettingsPage extends ConsumerWidget {
             title: const Text('利用規約'),
             trailing: const Icon(Icons.open_in_new),
             // アプリ内WebViewではなく外部ブラウザで開く
-            onTap: () => launchUrl(termOfUseUrl, mode: .externalApplication),
+            onTap: () async {
+              final messenger = ScaffoldMessenger.of(context);
+              final launched = await launchUrl(termOfUseUrl, mode: .externalApplication);
+              if (!launched) {
+                messenger.showSnackBar(const SnackBar(content: Text('利用規約を開けませんでした')));
+              }
+            },
           ),
           ListTile(title: const Text('バージョン'), trailing: Text(version)),
         ],

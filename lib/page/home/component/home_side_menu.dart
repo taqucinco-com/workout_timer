@@ -89,15 +89,13 @@ class HomeSideMenu extends HookConsumerWidget {
                   child: Center(
                     child: SizedBox(
                       width: .infinity,
-                      child: InkWell(
-                        onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute<void>(builder: (_) => const SettingsPage()),
-                        ),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.blue.shade900,
-                            borderRadius: BorderRadius.circular(8),
-                            shape: .rectangle,
+                      child: Material(
+                        color: Colors.blue.shade900,
+                        borderRadius: BorderRadius.circular(8),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(8),
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute<void>(builder: (_) => const SettingsPage()),
                           ),
                           child: Column(
                             children: [
