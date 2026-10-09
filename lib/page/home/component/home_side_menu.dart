@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:workout_timer/feature/workout/workout_state.provider.dart';
-import 'package:workout_timer/page/settings/settings_page.dart';
 
 enum HomeSideMenuDurationOption { running, rest }
 
@@ -94,9 +94,7 @@ class HomeSideMenu extends HookConsumerWidget {
                         borderRadius: BorderRadius.circular(8),
                         child: InkWell(
                           borderRadius: BorderRadius.circular(8),
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute<void>(builder: (_) => const SettingsPage()),
-                          ),
+                          onTap: () => context.push('/settings'),
                           child: Column(
                             children: [
                               Icon(Icons.settings, color: Colors.orange.shade700, size: 40),
