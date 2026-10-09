@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:workout_timer/feature/workout/workout_state.provider.dart';
+import 'package:workout_timer/page/settings/settings_page.dart';
 
 enum HomeSideMenuDurationOption { running, rest }
 
@@ -88,21 +89,24 @@ class HomeSideMenu extends HookConsumerWidget {
                   child: Center(
                     child: SizedBox(
                       width: .infinity,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.blue.shade900,
+                      child: Material(
+                        color: Colors.blue.shade900,
+                        borderRadius: BorderRadius.circular(8),
+                        child: InkWell(
                           borderRadius: BorderRadius.circular(8),
-                          shape: .rectangle,
-                        ),
-                        child: Column(
-                          children: [
-                            Icon(Icons.settings, color: Colors.orange.shade700, size: 40),
-                            Text(
-                              'Settings',
-                              textAlign: .center,
-                              style: TextStyle(color: Colors.orange.shade700, fontWeight: .bold, fontSize: 12),
-                            ),
-                          ],
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute<void>(builder: (_) => const SettingsPage()),
+                          ),
+                          child: Column(
+                            children: [
+                              Icon(Icons.settings, color: Colors.orange.shade700, size: 40),
+                              Text(
+                                'Settings',
+                                textAlign: .center,
+                                style: TextStyle(color: Colors.orange.shade700, fontWeight: .bold, fontSize: 12),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),

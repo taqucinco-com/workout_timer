@@ -129,7 +129,8 @@ actor SpeechRecognizer: ObservableObject {
             self.audioEngine = audioEngine
             self.request = request
 //            self.request?.shouldReportPartialResults = false
-//            self.request?.requiresOnDeviceRecognition = false
+            // 端末内認識に対応している場合は音声をAppleのサーバーへ送信しない。非対応端末はサーバー認識にフォールバックする。
+            self.request?.requiresOnDeviceRecognition = recognizer.supportsOnDeviceRecognition
             self.request?.addsPunctuation = true
 
             self.task = recognizer.recognitionTask(with: request, resultHandler: { [weak self] result, error in
